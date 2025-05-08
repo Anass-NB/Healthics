@@ -1,0 +1,45 @@
+# Backend
+/backend/target/
+/backend/.mvn/
+/backend/uploads/
+/backend/.idea/
+/backend/*.iml
+/backend/*.iws
+/backend/*.ipr
+/backend/.classpath
+/backend/.project
+/backend/.settings/
+/backend/HELP.md
+/backend/mvnw
+/backend/mvnw.cmd
+
+# Frontend
+/healthics-frontend/node_modules/
+/healthics-frontend/.pnp
+/healthics-frontend/.pnp.js
+/healthics-frontend/coverage/
+/healthics-frontend/build/
+/healthics-frontend/dist/
+/healthics-frontend/.DS_Store
+/healthics-frontend/.env.local
+/healthics-frontend/.env.development.local
+/healthics-frontend/.env.test.local
+/healthics-frontend/.env.production.local
+/healthics-frontend/npm-debug.log*
+/healthics-frontend/yarn-debug.log*
+/healthics-frontend/yarn-error.log*
+/healthics-frontend/.vscode/
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env
