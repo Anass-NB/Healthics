@@ -106,3 +106,626 @@ The frontend application will be available at http://localhost:3000.
 
 - For backend documentation, see [backend/README.md](backend/README.md)
 - For frontend documentation, see [frontend/README.md](frontend/README.md)
+```
+healthics v1
+├─ backend
+│  ├─ endpoints_postman.json
+│  ├─ pom.xml
+│  ├─ README.md
+│  └─ src
+│     └─ main
+│        ├─ java
+│        │  └─ com
+│        │     └─ healthics
+│        │        └─ backend
+│        │           ├─ config
+│        │           │  ├─ DatabaseSeeder.java
+│        │           │  └─ FileStorageProperties.java
+│        │           ├─ controller
+│        │           │  ├─ AdminController.java
+│        │           │  ├─ AuthController.java
+│        │           │  ├─ DocumentController.java
+│        │           │  └─ PatientController.java
+│        │           ├─ exception
+│        │           │  ├─ FileNotFoundException.java
+│        │           │  └─ FileStorageException.java
+│        │           ├─ HealthicsBackendApplication.java
+│        │           ├─ model
+│        │           │  ├─ Document.java
+│        │           │  ├─ DocumentCategory.java
+│        │           │  ├─ ERole.java
+│        │           │  ├─ PatientProfile.java
+│        │           │  ├─ Role.java
+│        │           │  └─ User.java
+│        │           ├─ payload
+│        │           │  ├─ request
+│        │           │  │  ├─ DocumentUpdateRequest.java
+│        │           │  │  ├─ LoginRequest.java
+│        │           │  │  ├─ PatientProfileRequest.java
+│        │           │  │  └─ SignupRequest.java
+│        │           │  └─ response
+│        │           │     ├─ DocumentResponse.java
+│        │           │     ├─ JwtResponse.java
+│        │           │     ├─ MessageResponse.java
+│        │           │     └─ StatisticsResponse.java
+│        │           ├─ repository
+│        │           │  ├─ DocumentCategoryRepository.java
+│        │           │  ├─ DocumentRepository.java
+│        │           │  ├─ PatientProfileRepository.java
+│        │           │  ├─ RoleRepository.java
+│        │           │  └─ UserRepository.java
+│        │           ├─ security
+│        │           │  ├─ jwt
+│        │           │  │  ├─ AuthEntryPointJwt.java
+│        │           │  │  ├─ AuthTokenFilter.java
+│        │           │  │  └─ JwtUtils.java
+│        │           │  ├─ services
+│        │           │  │  ├─ UserDetailsImpl.java
+│        │           │  │  └─ UserDetailsServiceImpl.java
+│        │           │  └─ WebSecurityConfig.java
+│        │           └─ service
+│        │              ├─ AdminService.java
+│        │              ├─ DocumentCategoryService.java
+│        │              ├─ DocumentService.java
+│        │              ├─ FileStorageService.java
+│        │              ├─ PatientProfileService.java
+│        │              └─ UserService.java
+│        └─ resources
+│           └─ application.properties
+├─ healthics-frontend
+│  ├─ index.html
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ README.md
+│  ├─ src
+│  │  ├─ api
+│  │  │  ├─ adminService.ts
+│  │  │  ├─ apiClient.ts
+│  │  │  ├─ authService.ts
+│  │  │  ├─ documentService.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ patientService.ts
+│  │  ├─ App.tsx
+│  │  ├─ components
+│  │  │  ├─ Layout.tsx
+│  │  │  ├─ NavbarContent.tsx
+│  │  │  ├─ RequireAdmin.tsx
+│  │  │  ├─ RequireAuth.tsx
+│  │  │  └─ RequirePatient.tsx
+│  │  ├─ context
+│  │  │  └─ AuthContext.tsx
+│  │  ├─ main.tsx
+│  │  └─ pages
+│  │     ├─ AdminDashboard.tsx
+│  │     ├─ DocumentDetailPage.tsx
+│  │     ├─ DocumentEditPage.tsx
+│  │     ├─ DocumentsPage.tsx
+│  │     ├─ DocumentUploadPage.tsx
+│  │     ├─ HomePage.tsx
+│  │     ├─ LoginPage.tsx
+│  │     ├─ PatientDocumentPage.tsx
+│  │     ├─ ProfilePage.tsx
+│  │     └─ RegisterPage.tsx
+│  ├─ tsconfig.json
+│  ├─ tsconfig.node.json
+│  └─ vite.config.ts
+├─ healthicspl.sql
+└─ README.md
+
+```
+
+### Implmenented endpoints  , json file that contains endpoints 
+```
+{
+  "info": {
+    "_postman_id": "c75e7dc2-84e6-4a8e-b5c7-abde8ff34c28",
+    "name": "Healthics API",
+    "description": "API endpoints for the Healthics medical document management system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"patient1\",\n  \"email\": \"patient1@example.com\",\n  \"password\": \"password123\",\n  \"role\": [\"patient\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new patient user"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"patientToken\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"patient1\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as patient and get JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"adminToken\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login as admin and get JWT token"
+          },
+          "response": []
+        }
+      ],
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "Patient Profile",
+      "item": [
+        {
+          "name": "Create Patient Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"phoneNumber\": \"123-456-7890\",\n  \"address\": \"123 Main St, Anytown, USA\",\n  \"medicalHistory\": \"No significant medical history\",\n  \"allergies\": \"Penicillin\",\n  \"medications\": \"None\",\n  \"emergencyContact\": \"Jane Doe, 987-654-3210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients", "profile"]
+            },
+            "description": "Create a patient profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Patient Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients", "profile"]
+            },
+            "description": "Get current patient profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Patient Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-01-15\",\n  \"phoneNumber\": \"123-456-7890\",\n  \"address\": \"456 New Ave, Anytown, USA\",\n  \"medicalHistory\": \"Updated medical history\",\n  \"allergies\": \"Penicillin, Sulfa drugs\",\n  \"medications\": \"Vitamin D\",\n  \"emergencyContact\": \"Jane Doe, 987-654-3210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients", "profile"]
+            },
+            "description": "Update patient profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Patient by ID (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/patients/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "patients", "1"]
+            },
+            "description": "Get patient profile by ID (Admin only)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Patient profile management endpoints"
+    },
+    {
+      "name": "Document Management",
+      "item": [
+        {
+          "name": "Get Document Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "categories"]
+            },
+            "description": "Get available document categories"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/your/file.pdf"
+                },
+                {
+                  "key": "title",
+                  "value": "Blood Test Results",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Annual blood work",
+                  "type": "text"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "doctorName",
+                  "value": "Dr. Smith",
+                  "type": "text"
+                },
+                {
+                  "key": "hospitalName",
+                  "value": "City Hospital",
+                  "type": "text"
+                },
+                {
+                  "key": "documentDate",
+                  "value": "2023-01-15T10:30:00",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documents",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents"]
+            },
+            "description": "Upload a new document"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Patient Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents"]
+            },
+            "description": "Get all documents for current patient"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Document by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "1"]
+            },
+            "description": "Get document details by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Download Document",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/1/download",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "1", "download"]
+            },
+            "description": "Download document file"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Document",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Blood Test Results\",\n  \"description\": \"Annual blood work with additional tests\",\n  \"categoryId\": 1,\n  \"doctorName\": \"Dr. Johnson\",\n  \"hospitalName\": \"City Hospital\",\n  \"documentDate\": \"2023-01-15T10:30:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "1"]
+            },
+            "description": "Update document metadata"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{patientToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "1"]
+            },
+            "description": "Delete a document"
+          },
+          "response": []
+        }
+      ],
+      "description": "Document management endpoints"
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get All Patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "patients"]
+            },
+            "description": "Get all patients (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "statistics"]
+            },
+            "description": "Get system statistics (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Patient Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/patients/2/status?active=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "patients", "2", "status"],
+              "query": [
+                {
+                  "key": "active",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": "Update patient account status (activate/deactivate)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Admin endpoints"
+    }
+  ]
+}
+
+```
+
+
+
+I'll list all the endpoints used in the Healthics frontend application, including the ones I've implemented handlers for:
+
+Authentication Endpoints
+POST /api/auth/signup - Register a new user
+POST /api/auth/signin - Login and get JWT token
+Patient Profile Endpoints
+GET /api/patients/profile - Get current patient profile
+POST /api/patients/profile - Create patient profile
+PUT /api/patients/profile - Update patient profile
+GET /api/patients/:id - Get patient by ID (admin only)
+Document Management Endpoints
+GET /api/documents/categories - Get document categories
+POST /api/documents - Upload a document
+GET /api/documents - Get all documents for current user
+GET /api/documents/:id - Get document by ID
+GET /api/documents/:id/download - Download document (Not implmenet it )
+PUT /api/documents/:id - Update document metadata
+DELETE /api/documents/:id - Delete document
+Admin Endpoints
+GET /api/admin/patients - Get all patients
+GET /api/admin/statistics - Get system statistics
+PUT /api/admin/patients/:id/status?active=true|false - Update patient status
+
+Not implmeneted yet
+GET /api/admin/patients/:id/documents - Get documents for a specific patient (admin only)
+GET /api/admin/documents/:id/download - Download document as admin
+
+GET /api/admin/patients/:id/documents - For admins to view patient documents
+GET /api/admin/documents/:id/download - For admins to download documents
+These endpoints correspond to the routes in your backend that allow administrators to access and manage patient documents. The implementation now properly handles the API responses and provides appropriate UI for these administrative functions.
+
+
+
+

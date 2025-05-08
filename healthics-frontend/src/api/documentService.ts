@@ -6,6 +6,7 @@ export interface DocumentCategory {
   description: string;
 }
 
+// Document interface to match the actual API response
 export interface Document {
   id: number;
   title: string;
@@ -15,11 +16,11 @@ export interface Document {
   doctorName: string;
   hospitalName: string;
   documentDate: string;
-  filename: string;
+  fileType: string;
   fileSize: number;
   uploadDate: string;
-  patientId?: number;
-  patientName?: string;
+  lastModifiedDate: string;
+  downloadUrl: string;
 }
 
 export interface UploadDocumentRequest {
@@ -97,16 +98,42 @@ const documentService = {
 
   downloadDocument: async (id: number) => {
     try {
-      const response = await apiClient.get<Blob>(`/documents/${id}/download`, {
+      // Instead of opening the URL directly, we use axios to handle the request
+      // This properly includes the auth token
+      const response = await apiClient.get(`/documents/${id}/download`, {
         responseType: 'blob',
       });
-      return response.data;
+      
+      // Create a blob URL and trigger the download
+      const blob = new Blob([response.data], { type: response.headers['content-type'] });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      // Try to get the filename from Content-Disposition header or use default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `document-${id}`;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      return true;
     } catch (error) {
       console.error(`Error downloading document ${id}:`, error);
       throw error;
     }
   },
-
+  
   updateDocument: async (id: number, data: UpdateDocumentRequest) => {
     try {
       const response = await apiClient.put<Document>(`/documents/${id}`, data);

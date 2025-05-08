@@ -1,43 +1,65 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Title, Button, Group, Table, Badge, ActionIcon, Text, Menu, TextInput, Select, Alert, LoadingOverlay } from '@mantine/core';
-import documentService, { Document, DocumentCategory } from '../api/documentService';
+import { 
+  Container, 
+  Title, 
+  Button, 
+  Group, 
+  Table, 
+  Badge, 
+  ActionIcon, 
+  Menu, 
+  Text, 
+  Alert, 
+  LoadingOverlay, 
+  Paper 
+} from '@mantine/core';
+import { IconDownload, IconEye, IconEdit, IconTrash, IconDotsVertical, IconPlus } from '@tabler/icons-react';
+import documentService from '../api/documentService';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../context/AuthContext';
 
+// Define document interface to match API response exactly
+interface Document {
+  id: number;
+  title: string;
+  description: string;
+  categoryId: number;
+  categoryName: string;
+  fileType: string;
+  fileSize: number;
+  doctorName: string;
+  hospitalName: string;
+  documentDate: string;
+  uploadDate: string;
+  lastModifiedDate: string;
+  downloadUrl: string;
+}
+
 const DocumentsPage = () => {
-  const navigate = useNavigate();
-  const { isAdmin } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [categories, setCategories] = useState<DocumentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDocuments = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Fetch document categories and all documents for the current user
-        const [docsData, catsData] = await Promise.all([
-          documentService.getAllDocuments(),
-          documentService.getCategories()
-        ]);
-        
-        setDocuments(docsData);
-        setCategories(catsData);
-      } catch (error: any) {
-        console.error('Error fetching documents:', error);
-        setError(error.response?.data?.message || 'Failed to load documents. Please try again.');
+        const data = await documentService.getAllDocuments();
+        setDocuments(data);
+      } catch (err: any) {
+        console.error('Error fetching documents:', err);
+        setError(err.response?.data?.message || 'Failed to load documents');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchDocuments();
   }, []);
 
   const handleViewDocument = (id: number) => {
@@ -45,15 +67,34 @@ const DocumentsPage = () => {
   };
 
   const handleEditDocument = (id: number) => {
-    // Only patients can edit documents
-    if (!isAdmin()) {
-      navigate(`/documents/${id}/edit`);
+    navigate(`/documents/${id}/edit`);
+  };
+
+  const handleDownloadDocument = async (id: number) => {
+    try {
+      setDownloadingId(id);
+      // Use our updated service method that preserves authentication
+      await documentService.downloadDocument(id);
+      
+      notifications.show({
+        title: 'Success',
+        message: 'Document download started',
+        color: 'green',
+      });
+    } catch (error: any) {
+      console.error('Download error:', error);
+      notifications.show({
+        title: 'Error',
+        message: error.response?.data?.message || 'Failed to download document',
+        color: 'red',
+      });
+    } finally {
+      setDownloadingId(null);
     }
   };
 
   const handleDeleteDocument = async (id: number) => {
-    // Only patients can delete documents
-    if (!isAdmin() && window.confirm('Are you sure you want to delete this document?')) {
+    if (window.confirm('Are you sure you want to delete this document?')) {
       try {
         await documentService.deleteDocument(id);
         setDocuments(documents.filter(doc => doc.id !== id));
@@ -62,156 +103,154 @@ const DocumentsPage = () => {
           message: 'Document deleted successfully',
           color: 'green',
         });
-      } catch (error) {
+      } catch (error: any) {
         notifications.show({
           title: 'Error',
-          message: 'Failed to delete document. Please try again.',
+          message: error.response?.data?.message || 'Failed to delete document',
           color: 'red',
         });
       }
     }
   };
 
-  const handleDownloadDocument = async (id: number) => {
+  const formatDate = (dateString: string) => {
     try {
-      const document = documents.find(doc => doc.id === id);
-      if (!document) return;
-
-      const blob = await documentService.downloadDocument(id);
-      
-      // Create a download link
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = document.filename || `document-${id}.pdf`;
-      
-      // Append to body, click, and clean up
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      notifications.show({
-        title: 'Success',
-        message: 'Document download started',
-        color: 'green',
-      });
-    } catch (error) {
-      console.error('Download error:', error);
-      notifications.show({
-        title: 'Error',
-        message: 'Failed to download document. Please try again.',
-        color: 'red',
-      });
+      return new Date(dateString).toLocaleDateString();
+    } catch (e) {
+      return dateString;
     }
   };
 
-  const getCategoryName = (categoryId: number) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : 'Unknown';
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
-
-  const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = 
-      doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (doc.doctorName && doc.doctorName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (doc.hospitalName && doc.hospitalName.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesCategory = categoryFilter ? doc.categoryId.toString() === categoryFilter : true;
-    
-    return matchesSearch && matchesCategory;
-  });
 
   return (
     <Container size="lg" pos="relative">
-      {loading && <LoadingOverlay visible />}
+      <LoadingOverlay visible={loading} />
       
       <Group justify="space-between" mb="lg">
-        <Title>{isAdmin() ? 'View Documents' : 'My Documents'}</Title>
-        
-        {/* Only show upload button for patients */}
-        {!isAdmin() && (
-          <Button onClick={() => navigate('/documents/upload')}>
-            Upload New Document
-          </Button>
-        )}
+        <Title>My Documents</Title>
+        <Button 
+          leftIcon={<IconPlus size="1rem" />} 
+          onClick={() => navigate('/documents/upload')}
+        >
+          Upload Document
+        </Button>
       </Group>
 
       {error && (
-        <Alert color="red" mb="lg" onClose={() => setError(null)}>
+        <Alert color="red" mb="lg" title="Error" withCloseButton onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
 
-      <Group mb="md">
-        <TextInput
-          placeholder="Search documents..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.currentTarget.value)}
-          style={{ flex: 1 }}
-        />
-        <Select
-          placeholder="Filter by category"
-          data={categories.map(cat => ({ value: cat.id.toString(), label: cat.name }))}
-          value={categoryFilter}
-          onChange={setCategoryFilter}
-          clearable
-          style={{ width: 200 }}
-        />
-      </Group>
-
-      {filteredDocuments.length === 0 ? (
-        <Text>No documents found.</Text>
-      ) : (
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Title</Table.Th>
-              <Table.Th>Category</Table.Th>
-              <Table.Th>Doctor</Table.Th>
-              <Table.Th>Hospital</Table.Th>
-              <Table.Th>Date</Table.Th>
-              <Table.Th>Actions</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {filteredDocuments.map((doc) => (
-              <Table.Tr key={doc.id}>
-                <Table.Td>{doc.title}</Table.Td>
-                <Table.Td>
-                  <Badge>{getCategoryName(doc.categoryId)}</Badge>
-                </Table.Td>
-                <Table.Td>{doc.doctorName}</Table.Td>
-                <Table.Td>{doc.hospitalName}</Table.Td>
-                <Table.Td>
-                  {new Date(doc.documentDate).toLocaleDateString()}
-                </Table.Td>
-                <Table.Td>
-                  <Group>
-                    <Button size="xs" onClick={() => handleViewDocument(doc.id)}>
-                      View
-                    </Button>
-                    <Button size="xs" variant="outline" onClick={() => handleDownloadDocument(doc.id)}>
-                      Download
-                    </Button>
-                    {/* Only show edit and delete options for patients */}
-                    {!isAdmin() && (
-                      <>
-                        <Button size="xs" variant="light" onClick={() => handleEditDocument(doc.id)}>
-                          Edit
-                        </Button>
-                        <Button size="xs" color="red" variant="subtle" onClick={() => handleDeleteDocument(doc.id)}>
-                          Delete
-                        </Button>
-                      </>
-                    )}
-                  </Group>
-                </Table.Td>
+      <Paper shadow="sm" p="md" withBorder>
+        {documents.length === 0 ? (
+          <Text>No documents found. Click the "Upload Document" button to add your first document.</Text>
+        ) : (
+          <Table striped highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Title</Table.Th>
+                <Table.Th>Category</Table.Th>
+                <Table.Th>Doctor</Table.Th>
+                <Table.Th>Date</Table.Th>
+                <Table.Th>Size</Table.Th>
+                <Table.Th>Actions</Table.Th>
               </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-      )}
+            </Table.Thead>
+            <Table.Tbody>
+              {documents.map((doc) => (
+                <Table.Tr key={doc.id}>
+                  <Table.Td>{doc.title}</Table.Td>
+                  <Table.Td>
+                    <Badge>{doc.categoryName}</Badge>
+                  </Table.Td>
+                  <Table.Td>{doc.doctorName}</Table.Td>
+                  <Table.Td>{formatDate(doc.documentDate)}</Table.Td>
+                  <Table.Td>{formatFileSize(doc.fileSize)}</Table.Td>
+                  <Table.Td>
+                    <Group gap="xs">
+                      <ActionIcon 
+                        variant="light" 
+                        color="blue" 
+                        onClick={() => handleViewDocument(doc.id)}
+                        title="View document"
+                      >
+                        <IconEye size="1.125rem" />
+                      </ActionIcon>
+                      <ActionIcon 
+                        variant="light" 
+                        color="green" 
+                        onClick={() => handleDownloadDocument(doc.id)}
+                        title="Download document"
+                        loading={downloadingId === doc.id}
+                      >
+                        <IconDownload size="1.125rem" />
+                      </ActionIcon>
+                      <ActionIcon 
+                        variant="light" 
+                        color="yellow" 
+                        onClick={() => handleEditDocument(doc.id)}
+                        title="Edit document"
+                      >
+                        <IconEdit size="1.125rem" />
+                      </ActionIcon>
+                      <ActionIcon 
+                        variant="light" 
+                        color="red" 
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        title="Delete document"
+                      >
+                        <IconTrash size="1.125rem" />
+                      </ActionIcon>
+                      <Menu position="bottom-end" shadow="md">
+                        <Menu.Target>
+                          <ActionIcon variant="subtle">
+                            <IconDotsVertical size="1.125rem" />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item 
+                            icon={<IconEye size="1rem" />} 
+                            onClick={() => handleViewDocument(doc.id)}
+                          >
+                            View Details
+                          </Menu.Item>
+                          <Menu.Item 
+                            icon={<IconDownload size="1rem" />} 
+                            onClick={() => handleDownloadDocument(doc.id)}
+                          >
+                            Download
+                          </Menu.Item>
+                          <Menu.Item 
+                            icon={<IconEdit size="1rem" />} 
+                            onClick={() => handleEditDocument(doc.id)}
+                          >
+                            Edit
+                          </Menu.Item>
+                          <Menu.Item 
+                            icon={<IconTrash size="1rem" />} 
+                            color="red" 
+                            onClick={() => handleDeleteDocument(doc.id)}
+                          >
+                            Delete
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        )}
+      </Paper>
     </Container>
   );
 };

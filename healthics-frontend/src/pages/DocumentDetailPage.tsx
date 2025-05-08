@@ -1,54 +1,58 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Container, Title, Text, Button, Group, Card, Grid, Badge, Divider, LoadingOverlay, Alert } from '@mantine/core';
-import documentService, { Document, DocumentCategory } from '../api/documentService';
-import adminService from '../api/adminService';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  Container, 
+  Title, 
+  Text, 
+  Button, 
+  Group, 
+  Card, 
+  Grid, 
+  Badge, 
+  Divider, 
+  LoadingOverlay, 
+  Alert,
+  ActionIcon,
+  Paper
+} from '@mantine/core';
+import { IconDownload, IconEdit, IconTrash, IconArrowLeft } from '@tabler/icons-react';
+import documentService from '../api/documentService';
 import { notifications } from '@mantine/notifications';
-import { useAuth } from '../context/AuthContext';
+
+// Define Document interface to match API response exactly
+interface Document {
+  id: number;
+  title: string;
+  description: string;
+  categoryId: number;
+  categoryName: string;
+  fileType: string;
+  fileSize: number;
+  doctorName: string;
+  hospitalName: string;
+  documentDate: string;
+  uploadDate: string;
+  lastModifiedDate: string;
+  downloadUrl: string;
+}
 
 const DocumentDetailPage = () => {
-  const { id, documentId } = useParams<{ id?: string; documentId?: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { isAdmin } = useAuth();
   const [document, setDocument] = useState<Document | null>(null);
-  const [categories, setCategories] = useState<DocumentCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Determine if we're in admin mode based on the URL path
-  const isAdminView = location.pathname.startsWith('/admin');
-  // Use the appropriate ID parameter
-  const docId = documentId || id;
+  const [downloadLoading, setDownloadLoading] = useState(false);
   
   useEffect(() => {
-    const fetchData = async () => {
-      if (!docId) return;
+    const fetchDocument = async () => {
+      if (!id) return;
       
       try {
         setLoading(true);
         setError(null);
-        
-        // Fetch document categories
-        const categoriesData = await documentService.getCategories();
-        setCategories(categoriesData);
-        
-        // Fetch document based on whether we're in admin view or regular view
-        let documentData;
-        if (isAdminView && isAdmin()) {
-          try {
-            // This would need to be implemented in your API
-            // For now, let's fall back to regular document fetch
-            documentData = await documentService.getDocumentById(parseInt(docId));
-          } catch (adminError) {
-            console.error('Error fetching document as admin:', adminError);
-            documentData = await documentService.getDocumentById(parseInt(docId));
-          }
-        } else {
-          documentData = await documentService.getDocumentById(parseInt(docId));
-        }
-        
-        setDocument(documentData);
+        const data = await documentService.getDocumentById(parseInt(id));
+        setDocument(data);
       } catch (err: any) {
         console.error('Error fetching document details:', err);
         setError(err.response?.data?.message || 'Failed to load document details');
@@ -57,88 +61,67 @@ const DocumentDetailPage = () => {
       }
     };
 
-    fetchData();
-  }, [docId, isAdminView, isAdmin]);
+    fetchDocument();
+  }, [id]);
 
   const handleDownload = async () => {
-    if (!docId || !document) return;
+    if (!id || !document) return;
     
     try {
-      let blob;
-      
-      // Use the appropriate download method based on whether we're in admin view
-      if (isAdminView && isAdmin()) {
-        blob = await adminService.downloadDocument(parseInt(docId));
-      } else {
-        blob = await documentService.downloadDocument(parseInt(docId));
-      }
-      
-      // Create a download link
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = document.filename || `document-${docId}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      setDownloadLoading(true);
+      // Use our updated service method that preserves authentication
+      await documentService.downloadDocument(parseInt(id));
       
       notifications.show({
         title: 'Success',
         message: 'Document download started',
         color: 'green',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Download error:', error);
       notifications.show({
         title: 'Error',
-        message: 'Failed to download document. Please try again.',
+        message: error.response?.data?.message || 'Failed to download document. Please try again.',
         color: 'red',
       });
+    } finally {
+      setDownloadLoading(false);
     }
   };
 
   const handleEdit = () => {
-    // Only allow editing in regular view, not admin view
-    if (!isAdminView) {
-      navigate(`/documents/${docId}/edit`);
-    }
+    if (!id) return;
+    navigate(`/documents/${id}/edit`);
   };
 
   const handleDelete = async () => {
-    if (!docId) return;
+    if (!id || !document) return;
     
     if (window.confirm('Are you sure you want to delete this document?')) {
       try {
-        await documentService.deleteDocument(parseInt(docId));
+        await documentService.deleteDocument(parseInt(id));
         notifications.show({
           title: 'Success',
           message: 'Document deleted successfully',
           color: 'green',
         });
-        
-        // Navigate back based on current view
-        if (isAdminView) {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/documents');
-        }
-      } catch (error) {
+        navigate('/documents');
+      } catch (error: any) {
         notifications.show({
           title: 'Error',
-          message: 'Failed to delete document. Please try again.',
+          message: error.response?.data?.message || 'Failed to delete document',
           color: 'red',
         });
       }
     }
   };
 
-  const getCategoryName = (categoryId: number) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    return category ? category.name : 'Unknown';
-  };
-
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    try {
+      return new Date(dateString).toLocaleString();
+    } catch (e) {
+      return dateString;
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -147,20 +130,6 @@ const DocumentDetailPage = () => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const handleGoBack = () => {
-    if (isAdminView) {
-      // In admin view, go back to admin dashboard
-      if (location.pathname.includes('/patients/')) {
-        navigate(-1); // Go back to the patient documents view
-      } else {
-        navigate('/admin/dashboard');
-      }
-    } else {
-      // In regular view, go back to documents page
-      navigate('/documents');
-    }
   };
 
   if (loading) {
@@ -177,8 +146,8 @@ const DocumentDetailPage = () => {
         <Alert color="red" title="Error">
           {error}
         </Alert>
-        <Button mt="md" onClick={handleGoBack}>
-          Back
+        <Button mt="md" onClick={() => navigate('/documents')}>
+          Back to Documents
         </Button>
       </Container>
     );
@@ -190,8 +159,8 @@ const DocumentDetailPage = () => {
         <Alert color="red" title="Not Found">
           Document not found.
         </Alert>
-        <Button mt="md" onClick={handleGoBack}>
-          Back
+        <Button mt="md" onClick={() => navigate('/documents')}>
+          Back to Documents
         </Button>
       </Container>
     );
@@ -199,98 +168,100 @@ const DocumentDetailPage = () => {
 
   return (
     <Container size="md">
-      <Group justify="space-between" mb="lg">
+      <Group mb="lg">
+        <ActionIcon size="lg" variant="subtle" onClick={() => navigate('/documents')}>
+          <IconArrowLeft />
+        </ActionIcon>
         <Title>{document.title}</Title>
-        <Group>
-          <Button variant="outline" onClick={handleDownload}>
-            Download
-          </Button>
-          {!isAdminView && ( // Only show edit/delete in regular view
-            <>
-              <Button variant="light" onClick={handleEdit}>
-                Edit
-              </Button>
-              <Button variant="filled" color="red" onClick={handleDelete}>
-                Delete
-              </Button>
-            </>
-          )}
-        </Group>
       </Group>
 
-      <Card shadow="xs" withBorder mb="lg">
-        <Grid>
-          <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Text fw={500}>Category</Text>
-            <Badge size="lg" mb="md">{getCategoryName(document.categoryId)}</Badge>
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Text fw={500}>Document Date</Text>
-            <Text mb="md">{formatDate(document.documentDate)}</Text>
-          </Grid.Col>
-        </Grid>
-
-        <Divider my="xs" />
-
-        <Grid>
-          <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Text fw={500}>Doctor</Text>
-            <Text mb="md">{document.doctorName}</Text>
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Text fw={500}>Hospital/Clinic</Text>
-            <Text mb="md">{document.hospitalName}</Text>
-          </Grid.Col>
-        </Grid>
-
-        {/* Show patient info in admin view */}
-        {isAdminView && document.patientName && (
-          <>
-            <Divider my="xs" />
-            <Grid>
-              <Grid.Col span={12}>
-                <Text fw={500}>Patient</Text>
-                <Text mb="md">{document.patientName}</Text>
-              </Grid.Col>
-            </Grid>
-          </>
-        )}
-
-        <Divider my="xs" />
-
-        <Grid>
-          <Grid.Col span={12}>
-            <Text fw={500}>Description</Text>
-            <Text mb="md">{document.description}</Text>
-          </Grid.Col>
-        </Grid>
-
-        <Divider my="xs" />
+      <Paper shadow="xs" p="lg" withBorder mb="lg">
+        <Group position="right" mb="lg">
+          <Button 
+            leftIcon={<IconDownload size="1rem" />} 
+            variant="light"
+            onClick={handleDownload}
+            loading={downloadLoading}
+          >
+            Download
+          </Button>
+          <Button 
+            leftIcon={<IconEdit size="1rem" />}
+            variant="outline" 
+            onClick={handleEdit}
+          >
+            Edit
+          </Button>
+          <Button 
+            leftIcon={<IconTrash size="1rem" />} 
+            color="red" 
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
+        </Group>
 
         <Grid>
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Text fw={500}>File Name</Text>
-            <Text mb="md">{document.filename}</Text>
+            <Card withBorder shadow="sm">
+              <Card.Section withBorder inheritPadding py="xs">
+                <Group position="apart">
+                  <Text weight={500}>Document Information</Text>
+                  <Badge size="lg">{document.categoryName}</Badge>
+                </Group>
+              </Card.Section>
+              
+              <Group mt="md">
+                <Text size="sm" weight={500} w={150}>Document Date:</Text>
+                <Text>{formatDate(document.documentDate)}</Text>
+              </Group>
+              
+              <Group mt="xs">
+                <Text size="sm" weight={500} w={150}>Doctor:</Text>
+                <Text>{document.doctorName || 'Not specified'}</Text>
+              </Group>
+              
+              <Group mt="xs">
+                <Text size="sm" weight={500} w={150}>Hospital/Clinic:</Text>
+                <Text>{document.hospitalName || 'Not specified'}</Text>
+              </Group>
+            </Card>
           </Grid.Col>
+          
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Text fw={500}>File Size</Text>
-            <Text mb="md">{formatFileSize(document.fileSize)}</Text>
+            <Card withBorder shadow="sm" h="100%">
+              <Card.Section withBorder inheritPadding py="xs">
+                <Text weight={500}>File Information</Text>
+              </Card.Section>
+              
+              <Group mt="md">
+                <Text size="sm" weight={500} w={150}>File Type:</Text>
+                <Text>{document.fileType}</Text>
+              </Group>
+              
+              <Group mt="xs">
+                <Text size="sm" weight={500} w={150}>File Size:</Text>
+                <Text>{formatFileSize(document.fileSize)}</Text>
+              </Group>
+              
+              <Group mt="xs">
+                <Text size="sm" weight={500} w={150}>Upload Date:</Text>
+                <Text>{formatDate(document.uploadDate)}</Text>
+              </Group>
+              
+              <Group mt="xs">
+                <Text size="sm" weight={500} w={150}>Last Modified:</Text>
+                <Text>{formatDate(document.lastModifiedDate)}</Text>
+              </Group>
+            </Card>
           </Grid.Col>
         </Grid>
 
-        <Divider my="xs" />
-
-        <Grid>
-          <Grid.Col span={12}>
-            <Text fw={500}>Upload Date</Text>
-            <Text>{formatDate(document.uploadDate)}</Text>
-          </Grid.Col>
-        </Grid>
-      </Card>
-
-      <Button variant="subtle" onClick={handleGoBack}>
-        Back
-      </Button>
+        <Divider my="lg" />
+        
+        <Text weight={500} mb="xs">Description</Text>
+        <Text>{document.description || 'No description provided.'}</Text>
+      </Paper>
     </Container>
   );
 };
