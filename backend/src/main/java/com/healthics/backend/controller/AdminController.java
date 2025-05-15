@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -55,10 +56,28 @@ public class AdminController {
         return ResponseEntity.ok(patients);
     }
 
+    @GetMapping("/patients/all")
+    public ResponseEntity<List<Map<String, Object>>> getAllPatientsIncludingIncomplete() {
+        // This endpoint returns all users with ROLE_PATIENT, even those without profiles
+        return ResponseEntity.ok(adminService.getAllPatientUsers());
+    }
+
+    @GetMapping("/patients/with-profiles")
+    public ResponseEntity<List<Map<String, Object>>> getAllPatientsWithProfiles() {
+        // This endpoint returns detailed patient information with profiles
+        return ResponseEntity.ok(adminService.getAllPatientsWithProfiles());
+    }
+
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> getSystemStatistics() {
         StatisticsResponse statistics = adminService.getSystemStatistics();
         return ResponseEntity.ok(statistics);
+    }
+
+    @GetMapping("/statistics/extended")
+    public ResponseEntity<Map<String, Object>> getExtendedStatistics() {
+        // Get extended statistics for charts and visualizations
+        return ResponseEntity.ok(adminService.getExtendedStatistics());
     }
 
     @PutMapping("/patients/{id}/status")
@@ -70,6 +89,20 @@ public class AdminController {
             boolean status = userService.updateUserActiveStatus(id, active);
             String statusText = status ? "activated" : "deactivated";
             return ResponseEntity.ok(new MessageResponse("User account has been " + statusText));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
+    }
+
+    @PutMapping("/patients/{id}/ban")
+    public ResponseEntity<?> banPatient(
+            @PathVariable Long id,
+            @RequestParam boolean banned) {
+
+        try {
+            User updatedUser = adminService.banPatient(id, banned);
+            String statusText = banned ? "banned" : "unbanned";
+            return ResponseEntity.ok(new MessageResponse("Patient has been " + statusText));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
@@ -139,6 +172,24 @@ public class AdminController {
     }
 
     /**
+     * Get all documents in the system (Admin only)
+     */
+    @GetMapping("/documents")
+    public ResponseEntity<?> getAllDocuments() {
+        try {
+            List<Document> documents = documentService.getAllDocuments();
+            List<DocumentResponse> responses = documents.stream()
+                    .map(this::convertToResponse)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Error retrieving all documents: " + e.getMessage()));
+        }
+    }
+
+    /**
      * Helper method to convert Document to DocumentResponse
      */
     private DocumentResponse convertToResponse(Document document) {
@@ -159,6 +210,10 @@ public class AdminController {
         response.setDocumentDate(document.getDocumentDate());
         response.setUploadDate(document.getUploadDate());
         response.setLastModifiedDate(document.getLastModifiedDate());
+
+        // Add user information
+        response.setUserId(document.getUser().getId());
+        response.setUsername(document.getUser().getUsername());
 
         // Generate download URL for admin route
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()

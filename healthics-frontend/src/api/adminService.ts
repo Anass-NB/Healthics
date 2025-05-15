@@ -12,6 +12,20 @@ export interface SystemStatistics {
   documentsUploadedThisMonth: number;
 }
 
+// Extended statistics for charts and visualizations
+export interface ExtendedStatistics {
+  totalPatients: number;
+  totalDocuments: number;
+  totalStorageUsed: number;
+  activePatients: number;
+  inactivePatients: number;
+  bannedPatients: number;
+  patientsWithoutProfiles: number;
+  monthlyUploads: Record<string, number>;
+  documentTypes: Record<string, number>;
+  patientRegistrations: Record<string, number>;
+}
+
 // Match the actual API response structure from /api/admin/patients
 export interface PatientResponse {
   id: number;
@@ -25,6 +39,7 @@ export interface PatientResponse {
       name: string;
     }[];
     active: boolean;
+    banned?: boolean;
   };
   firstName: string;
   lastName: string;
@@ -35,6 +50,13 @@ export interface PatientResponse {
   allergies: string;
   medications: string;
   emergencyContact: string;
+  documentCount?: number;
+}
+
+// Extended Document interface that includes user information
+export interface ExtendedDocument extends Document {
+  userId: number;
+  username: string;
 }
 
 const adminService = {
@@ -46,6 +68,19 @@ const adminService = {
       return response.data;
     } catch (error) {
       console.error('Error fetching patients:', error);
+      throw error;
+    }
+  },
+  
+  // New method to get patients with a specific endpoint
+  getPatients: async (endpoint: string) => {
+    try {
+      console.log(`Fetching patients from ${endpoint}`);
+      const response = await apiClient.get(endpoint);
+      console.log('Patients response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching patients from ${endpoint}:`, error);
       throw error;
     }
   },
@@ -61,6 +96,18 @@ const adminService = {
       throw error;
     }
   },
+  
+  getExtendedStatistics: async () => {
+    try {
+      console.log('Fetching extended statistics...');
+      const response = await apiClient.get<ExtendedStatistics>('/admin/statistics/extended');
+      console.log('Extended statistics response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching extended statistics:', error);
+      throw error;
+    }
+  },
 
   updatePatientStatus: async (patientId: number, active: boolean) => {
     try {
@@ -70,6 +117,31 @@ const adminService = {
       return response.data;
     } catch (error) {
       console.error('Error updating patient status:', error);
+      throw error;
+    }
+  },
+  
+  updatePatientBanStatus: async (patientId: number, banned: boolean) => {
+    try {
+      console.log(`Updating patient ${patientId} ban status to ${banned}`);
+      const response = await apiClient.put(`/admin/patients/${patientId}/ban?banned=${banned}`);
+      console.log('Update ban status response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating patient ban status:', error);
+      throw error;
+    }
+  },
+
+  // Get all documents in the system (admin access)
+  getAllDocuments: async () => {
+    try {
+      console.log('Fetching all documents in the system');
+      const response = await apiClient.get<ExtendedDocument[]>('/admin/documents');
+      console.log('All documents response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching all documents:', error);
       throw error;
     }
   },
@@ -132,66 +204,151 @@ const adminService = {
   getMockStatistics: (): SystemStatistics => {
     return {
       totalPatients: 4,
-      totalDocuments: 2,
-      totalStorageUsed: 235730,
-      activeUsers: 4,
-      inactiveUsers: 0,
+      totalDocuments: 7,
+      totalStorageUsed: 2357300,
+      activeUsers: 3,
+      inactiveUsers: 1,
       documentsUploadedToday: 2,
-      documentsUploadedThisMonth: 2
+      documentsUploadedThisMonth: 5
+    };
+  },
+  
+  getMockExtendedStatistics: (): ExtendedStatistics => {
+    return {
+      totalPatients: 4,
+      totalDocuments: 7,
+      totalStorageUsed: 2357300,
+      activePatients: 3,
+      inactivePatients: 1, 
+      bannedPatients: 0,
+      patientsWithoutProfiles: 1,
+      monthlyUploads: {
+        "JANUARY": 1,
+        "FEBRUARY": 0,
+        "MARCH": 2,
+        "APRIL": 0,
+        "MAY": 3,
+        "JUNE": 1
+      },
+      documentTypes: {
+        "Lab Results": 3,
+        "Prescription": 2,
+        "Radiology": 1,
+        "Other": 1
+      },
+      patientRegistrations: {
+        "JANUARY": 0,
+        "FEBRUARY": 1,
+        "MARCH": 2,
+        "APRIL": 0,
+        "MAY": 1,
+        "JUNE": 0
+      }
     };
   },
 
-  getMockPatients: (): PatientResponse[] => {
+  getMockPatients: (): any[] => {
     return [
       {
         "id": 1,
-        "user": {
-          "id": 5,
-          "username": "tomy",
-          "email": "tomy@example.com",
-          "password": "$2a$10$IJlRsqmI67GqTkisPdvlp.Lton9SkX7Umg/2AMHTFdeoHs99CG4Bi",
-          "roles": [
-            {
-              "id": 1,
-              "name": "ROLE_PATIENT"
-            }
-          ],
-          "active": true
-        },
+        "username": "tomy",
+        "email": "tomy@example.com",
+        "active": true,
+        "banned": false,
+        "hasProfile": true,
         "firstName": "John",
         "lastName": "Doe",
-        "dateOfBirth": "1990-01-15",
-        "phoneNumber": "123-456-7890",
-        "address": "123 Main St, Anytown, USA",
-        "medicalHistory": "No significant medical history",
-        "allergies": "Penicillin",
-        "medications": "None",
-        "emergencyContact": "Jane Doe, 987-654-3210"
+        "profileId": 1,
+        "documentCount": 3
       },
       {
         "id": 2,
-        "user": {
-          "id": 6,
-          "username": "ahmed",
-          "email": "ahmed@example.com",
-          "password": "$2a$10$anqa9m.j29UqtE9hF6ZlreXIbsLrvMM0c8a3begMrJzTUl4enxK8O",
-          "roles": [
-            {
-              "id": 1,
-              "name": "ROLE_PATIENT"
-            }
-          ],
-          "active": true
-        },
+        "username": "ahmed",
+        "email": "ahmed@example.com",
+        "active": true,
+        "banned": false,
+        "hasProfile": true,
         "firstName": "Ahmed",
         "lastName": "Duffy",
-        "dateOfBirth": "1973-04-24",
-        "phoneNumber": "+1 (135) 233-5915",
-        "address": "Nisi consequat Pari",
-        "medicalHistory": "Hic et cum provident",
-        "allergies": "Autem in ipsum nost",
-        "medications": "Sint nisi eos quis ",
-        "emergencyContact": "Illo impedit deleni"
+        "profileId": 2,
+        "documentCount": 2
+      },
+      {
+        "id": 3,
+        "username": "maria",
+        "email": "maria@example.com",
+        "active": false,
+        "banned": false,
+        "hasProfile": true,
+        "firstName": "Maria",
+        "lastName": "Garcia",
+        "profileId": 3,
+        "documentCount": 1
+      },
+      {
+        "id": 4,
+        "username": "newuser",
+        "email": "newuser@example.com",
+        "active": true,
+        "banned": false,
+        "hasProfile": false,
+        "documentCount": 0
+      }
+    ];
+  },
+  
+  getMockDocuments: (): ExtendedDocument[] => {
+    return [
+      {
+        id: 1,
+        title: "Blood Test Results",
+        description: "Annual blood work results",
+        fileType: "application/pdf",
+        fileSize: 245760,
+        categoryId: 1,
+        categoryName: "Lab Results",
+        doctorName: "Dr. Smith",
+        hospitalName: "General Hospital",
+        documentDate: "2023-04-15T10:30:00",
+        uploadDate: "2023-04-16T14:22:33",
+        lastModifiedDate: "2023-04-16T14:22:33",
+        downloadUrl: "/api/admin/documents/1/download",
+        userId: 1,
+        username: "tomy"
+      },
+      {
+        id: 2,
+        title: "X-Ray Chest",
+        description: "Chest X-ray for pneumonia check",
+        fileType: "image/jpeg",
+        fileSize: 1245760,
+        categoryId: 2,
+        categoryName: "Radiology",
+        doctorName: "Dr. Johnson",
+        hospitalName: "City Medical Center",
+        documentDate: "2023-05-22T09:15:00",
+        uploadDate: "2023-05-22T16:45:10",
+        lastModifiedDate: "2023-05-22T16:45:10",
+        downloadUrl: "/api/admin/documents/2/download",
+        userId: 1,
+        username: "tomy"
+      },
+      {
+        id: 3,
+        title: "Prescription - Antibiotics",
+        description: "Prescription for respiratory infection",
+        fileType: "application/pdf",
+        fileSize: 125760,
+        categoryId: 3,
+        categoryName: "Prescription",
+        doctorName: "Dr. Williams",
+        hospitalName: "General Hospital",
+        documentDate: "2023-05-25T11:30:00",
+        uploadDate: "2023-05-25T12:10:15",
+        lastModifiedDate: "2023-05-25T12:10:15",
+        downloadUrl: "/api/admin/documents/3/download",
+        userId: 2,
+        username: "ahmed"
       }
     ];
   }

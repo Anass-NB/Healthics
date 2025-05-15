@@ -1,6 +1,16 @@
 import { NavLink } from '@mantine/core';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { 
+  IconHome, 
+  IconUser, 
+  IconFileText, 
+  IconUpload, 
+  IconDashboard, 
+  IconUsers, 
+  IconFileAnalytics, 
+  IconChartBar 
+} from '@tabler/icons-react';
 
 const NavbarContent = () => {
   const location = useLocation();
@@ -14,17 +24,18 @@ const NavbarContent = () => {
         component={Link}
         to="/"
         label="Home"
+        leftSection={<IconHome size={20} />}
         active={location.pathname === '/'}
       />
       
       {/* Patient-only links */}
       {!isAdmin() && (
         <>
-         
           <NavLink
             component={Link}
             to="/profile"
             label="My Profile"
+            leftSection={<IconUser size={20} />}
             active={location.pathname === '/profile'}
           />
           
@@ -32,7 +43,16 @@ const NavbarContent = () => {
             component={Link}
             to="/documents"
             label="My Documents"
-            active={location.pathname.startsWith('/documents')}
+            leftSection={<IconFileText size={20} />}
+            active={location.pathname === '/documents'}
+          />
+          
+          <NavLink
+            component={Link}
+            to="/documents/upload"
+            label="Upload Document"
+            leftSection={<IconUpload size={20} />}
+            active={location.pathname === '/documents/upload'}
           />
         </>
       )}
@@ -43,16 +63,34 @@ const NavbarContent = () => {
           <NavLink
             component={Link}
             to="/admin/dashboard"
-            label="Admin Dashboard"
-            active={location.pathname.startsWith('/admin')}
+            label="Dashboard"
+            leftSection={<IconDashboard size={20} />}
+            active={location.pathname === '/admin/dashboard'}
             fw={700}
             c="blue"
           />
           
           <NavLink
             component={Link}
+            to="/admin/patients"
+            label="Patient Management"
+            leftSection={<IconUsers size={20} />}
+            active={location.pathname === '/admin/patients'}
+          />
+          
+          <NavLink
+            component={Link}
+            to="/admin/documents"
+            label="All Documents"
+            leftSection={<IconFileAnalytics size={20} />}
+            active={location.pathname === '/admin/documents'}
+          />
+          
+          <NavLink
+            component={Link}
             to="/documents"
-            label="View Documents"
+            label="Admin Documents"
+            leftSection={<IconFileText size={20} />}
             active={location.pathname === '/documents'}
           />
         </>

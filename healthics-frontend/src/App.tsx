@@ -24,6 +24,8 @@ import DocumentEditPage from './pages/DocumentEditPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminPatientDocumentsPage from './pages/AdminPatientDocumentsPage';
 import AdminDocumentDetailPage from './pages/AdminDocumentDetailPage';
+import AdminPatientsPage from './pages/AdminPatientsPage';
+import AdminAllDocumentsPage from './pages/AdminAllDocumentsPage';
 
 const theme = createTheme({
   primaryColor: 'blue',
@@ -61,6 +63,8 @@ function App() {
               {/* Admin Routes */}
               <Route element={<RequireAdmin />}>
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/patients" element={<AdminPatientsPage />} />
+                <Route path="/admin/documents" element={<AdminAllDocumentsPage />} />
                 <Route path="/admin/patients/:patientId/documents" element={<AdminPatientDocumentsPage />} />
                 <Route path="/admin/documents/:documentId" element={<AdminDocumentDetailPage />} />
               </Route>

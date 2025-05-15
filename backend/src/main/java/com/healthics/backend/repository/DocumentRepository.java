@@ -13,4 +13,10 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findByUser(User user);
     List<Document> findByUserAndCategory(User user, DocumentCategory category);
     List<Document> findByUserOrderByUploadDateDesc(User user);
+
+    // Find all documents sorted by upload date (newest first)
+    List<Document> findAllByOrderByUploadDateDesc();
+
+    // Find documents by user ID
+    List<Document> findByUserIdOrderByUploadDateDesc(Long userId);
 }
