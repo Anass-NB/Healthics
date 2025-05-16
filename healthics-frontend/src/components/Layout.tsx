@@ -1,5 +1,16 @@
 import { Outlet } from 'react-router-dom';
-import { AppShell, Burger, Group, Text, UnstyledButton, Menu, Avatar, Divider } from '@mantine/core';
+import { 
+  AppShell, 
+  Burger, 
+  Group, 
+  Text, 
+  UnstyledButton, 
+  Menu, 
+  Avatar, 
+  Divider, 
+  Image,
+  Flex
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -29,7 +40,17 @@ const Layout = () => {
         <Group h="100%" px="md" justify="space-between">
           <Group>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Text size="lg" fw={700} c="blue.6">Healthics</Text>
+            <UnstyledButton onClick={() => navigate('/')}>
+              <Flex align="center" gap="xs">
+                <Image 
+                  src="/images/logo.png" 
+                  alt="Healthics Logo"
+                  width={32}
+                  height={32}
+                />
+                <Text size="lg" fw={700} c="blue.6">Healthics</Text>
+              </Flex>
+            </UnstyledButton>
           </Group>
           
           {user && (
@@ -70,8 +91,11 @@ const Layout = () => {
                     <Menu.Item onClick={() => navigate('/admin/dashboard')}>
                       Admin Dashboard
                     </Menu.Item>
-                    <Menu.Item onClick={() => navigate('/documents')}>
-                      View Documents
+                    <Menu.Item onClick={() => navigate('/admin/patients')}>
+                      Manage Patients
+                    </Menu.Item>
+                    <Menu.Item onClick={() => navigate('/admin/documents')}>
+                      All Documents
                     </Menu.Item>
                   </>
                 )}

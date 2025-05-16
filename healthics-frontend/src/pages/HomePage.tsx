@@ -10,62 +10,112 @@ import {
   SimpleGrid, 
   rem, 
   Box, 
-  Tabs,
-  ThemeIcon,
-  Flex
+  ThemeIcon, 
+  Flex,
+  Image,
+  Divider,
+  useMantineTheme,
+  Paper
 } from '@mantine/core';
+import { useAuth } from '../context/AuthContext';
 import { 
   IconCalendar, 
-  IconFileReport, 
-  IconHistory, 
-  IconCalculator, 
-  IconShare,
-  IconUserPlus,
-  IconUserCheck,
-  IconMessage
+  IconFolder, 
+  IconUpload, 
+  IconShare, 
+  IconBuildingHospital,
+  IconReportMedical,
+  IconChartBar,
+  IconArrowRight,
+  IconUsers,
+  IconHeartRateMonitor,
+  IconUserCircle,
+  IconFileAnalytics,
+  IconCloudUpload
 } from '@tabler/icons-react';
-import { useAuth } from '../context/AuthContext';
 
 const HomePage = () => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const theme = useMantineTheme();
 
-  // Landing page for non-authenticated users
-  const LandingPage = () => (
-    <Box>
-      {/* Hero Section */}
-      <Box sx={(theme) => ({
-        backgroundColor: theme.colors.blue[6],
-        color: 'white',
-        padding: '3rem 0',
-        borderRadius: '0 0 30px 30px',
-      })}>
+  // Features for the public landing page
+  const features = [
+    {
+      icon: IconCalendar,
+      title: '01',
+      description: 'Consultation Scheduling',
+      content: 'Schedule and manage your medical appointments easily'
+    },
+    {
+      icon: IconReportMedical,
+      title: '02',
+      description: 'Medical Document Access',
+      content: 'Access your medical reports and test results securely online'
+    },
+    {
+      icon: IconFolder,
+      title: '03',
+      description: 'Digital Medical Records',
+      content: 'Digitize and maintain a complete history of your medical records'
+    },
+    {
+      icon: IconBuildingHospital,
+      title: '04',
+      description: 'Healthcare Provider Network',
+      content: 'Connect with our network of trusted healthcare providers'
+    },
+    {
+      icon: IconShare,
+      title: '05',
+      description: 'Medical Record Sharing',
+      content: 'Securely share your medical records with your healthcare providers'
+    },
+  ];
+
+  // Guest landing page with features
+  const GuestLanding = () => (
+    <>
+      <Box 
+        py={60} 
+        sx={(theme) => ({
+          background: `linear-gradient(45deg, ${theme.colors.blue[7]} 0%, ${theme.colors.cyan[7]} 100%)`,
+          color: theme.white,
+          borderRadius: theme.radius.md
+        })}
+        mb={40}
+      >
         <Container size="lg">
-          <Stack spacing="xl" align="center" my={40}>
-            <Title order={1} size={rem(48)} ta="center">
+          <Stack spacing="xl" ta="center" mb={40}>
+            <Title 
+              order={1} 
+              size={rem(48)}
+              fw={900}
+            >
               Welcome to Healthics
             </Title>
-            <Text c="white" size="lg" maw={700} ta="center" mx="auto">
-              Your secure platform for storing and managing medical documents.
-              Keep all your health records in one secure place.
+            <Text c="white" size="xl" maw={700} mx="auto">
+              Your secure platform for managing medical documents and accessing healthcare services from anywhere.
             </Text>
             <Group justify="center" mt="xl">
               <Button 
                 size="lg" 
+                leftSection={<IconArrowRight size={18} />}
                 onClick={() => navigate('/login')}
-                sx={{ borderRadius: '25px' }}
-                variant="filled"
+                radius="xl"
                 color="white"
-                c="blue.6"
+                variant="white"
+                c="blue"
               >
                 Sign In
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
-                onClick={() => navigate('/register')}
-                sx={{ borderRadius: '25px' }}
                 color="white"
+                radius="xl"
+                leftSection={<IconUserCircle size={18} />}
+                onClick={() => navigate('/register')}
               >
                 Create Account
               </Button>
@@ -73,373 +123,252 @@ const HomePage = () => {
           </Stack>
         </Container>
       </Box>
-      
-      {/* Features Section */}
-      <Container size="lg" my={50}>
-        <Stack spacing={40}>
-          <Title order={2} size={rem(36)} ta="center">
-            Register for free and benefit from multiple advantages
-          </Title>
-          
-          <Tabs defaultValue="patients" color="blue" radius="xl" variant="pills">
-            <Tabs.List position="center" mb={30}>
-              <Tabs.Tab value="patients" fw={500}>Patients</Tabs.Tab>
-              <Tabs.Tab value="admin" fw={500}>Healthcare Providers</Tabs.Tab>
-            </Tabs.List>
 
-            <Tabs.Panel value="patients">
-              <Box mb={30}>
-                <Text size="lg" ta="center" maw={800} mx="auto">
-                  Healthics is an innovative health platform that allows you to retrieve your test results 
-                  and medical reports online through our partner laboratories and physicians. The platform 
-                  also allows you to digitize and keep a history of your medical records.
-                </Text>
-              </Box>
+      <Container size="lg">
+        <Title align="center" order={2} mb={50} fw={700}>
+          Digitize and manage your complete health journey
+        </Title>
+        
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 5 }} spacing={30}>
+          {features.map((feature, index) => (
+            <Card key={index} shadow="sm" padding="lg" radius="md" withBorder>
+              <Card.Section bg="blue.6" p="md">
+                <Flex justify="space-between" align="center">
+                  <Title order={2} c="white" fw={900}>
+                    {feature.title}
+                  </Title>
+                  <ThemeIcon size={40} radius="md" variant="light" color="blue.0">
+                    <feature.icon size={24} stroke={1.5} color={theme.colors.blue[6]} />
+                  </ThemeIcon>
+                </Flex>
+              </Card.Section>
               
-              <SimpleGrid cols={{ base: 1, xs: 2, md: 5 }} spacing={20}>
-                <FeatureCard
-                  number="01"
-                  title="Appointment Scheduling"
-                  description="Book appointments online or at home"
-                  icon={<IconCalendar size={24} />}
-                />
-                
-                <FeatureCard
-                  number="02"
-                  title="Medical Results"
-                  description="Access test results and medical reports"
-                  icon={<IconFileReport size={24} />}
-                />
-                
-                <FeatureCard
-                  number="03"
-                  title="Digital Records"
-                  description="Digitize and maintain your medical history"
-                  icon={<IconHistory size={24} />}
-                />
-                
-                <FeatureCard
-                  number="04"
-                  title="Cost Estimates"
-                  description="Request quotes for medical services"
-                  icon={<IconCalculator size={24} />}
-                />
-                
-                <FeatureCard
-                  number="05"
-                  title="Share Records"
-                  description="Securely share with your physician"
-                  icon={<IconShare size={24} />}
-                />
-              </SimpleGrid>
-            </Tabs.Panel>
-
-            <Tabs.Panel value="admin">
-              <Box mb={30}>
-                <Text size="lg" ta="center" maw={800} mx="auto">
-                  Healthics is an innovative health platform that allows healthcare providers to manage
-                  patient records, test results, and schedules in one secure place. Streamline your
-                  practice with our comprehensive digital tools.
-                </Text>
-              </Box>
+              <Text fw={700} size="lg" mt="md">
+                {feature.description}
+              </Text>
               
-              <SimpleGrid cols={{ base: 1, xs: 2, md: 3 }} spacing={20}>
-                <FeatureCard
-                  number="01"
-                  title="Patient Management"
-                  description="Manage appointments and patient records"
-                  icon={<IconUserPlus size={24} />}
-                />
-                
-                <FeatureCard
-                  number="02"
-                  title="Results Management"
-                  description="Upload and manage test results and reports"
-                  icon={<IconFileReport size={24} />}
-                />
-                
-                <FeatureCard
-                  number="03"
-                  title="Digital History"
-                  description="Access complete patient medical history"
-                  icon={<IconUserCheck size={24} />}
-                />
-              </SimpleGrid>
-            </Tabs.Panel>
-          </Tabs>
-          
-          <Group justify="center">
-            <Button 
-              size="lg" 
-              onClick={() => navigate('/register')}
-              sx={{ borderRadius: '25px' }}
-            >
-              Register Now
-            </Button>
-          </Group>
-        </Stack>
-      </Container>
-      
-      {/* Contact Section */}
-      <Container size="lg" my={60}>
-        <SimpleGrid cols={{ base: 1, md: 3 }} spacing={30}>
-          <ContactCard
-            icon={<IconMessage size={24} />}
-            title="Need more information?"
-            content=""
-          />
-          
-          <ContactCard
-            title="+1 800 HEALTH"
-            content=""
-          />
-          
-          <ContactCard
-            title="contact@healthics.com"
-            content=""
-          />
+              <Text mt="xs" c="dimmed" size="sm">
+                {feature.content}
+              </Text>
+            </Card>
+          ))}
         </SimpleGrid>
-      </Container>
-      
-      {/* Mobile App Section */}
-      <Box sx={(theme) => ({
-        backgroundColor: theme.colors.blue[6],
-        color: 'white',
-        padding: '3rem 0',
-      })}>
-        <Container size="lg">
-          <SimpleGrid cols={{ base: 1, md: 2 }} spacing={50}>
-            <Stack spacing="md" justify="center">
-              <Title order={1}>HEALTHICS ON YOUR SMARTPHONE</Title>
-              <Text size="lg">
-                Healthics is an innovative health platform that allows you to digitize your entire
-                healthcare journey from scheduling physical appointments, telemedicine, or home visits
-                to receiving your medical records online.
-                Access our services anytime from your mobile application.
+
+        <Box mt={60} mb={40}>
+          <Flex direction={{ base: 'column', md: 'row' }} align="center" gap={40}>
+            <Box style={{ flex: 1 }}>
+              <Title order={2} mb="md">Healthcare at your fingertips</Title>
+              <Text>
+                Healthics is an innovative healthcare platform that allows you to digitize your entire healthcare journey,
+                from scheduling appointments and managing medical documents to sharing records with healthcare providers.
               </Text>
-              <Text size="sm" mt="md">
-                AVAILABLE ON:
+              <Text mt="md">
+                Access your health information anytime, anywhere through our secure platform.
               </Text>
-              <Group>
-                <Button variant="white" color="dark">Google Play</Button>
-                <Button variant="white" color="dark">App Store</Button>
-              </Group>
-            </Stack>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              {/* Here you would place a phone mockup image */}
-              <Box 
-                sx={{ 
-                  width: 280, 
-                  height: 500, 
-                  backgroundColor: '#fff',
-                  borderRadius: 20,
-                  border: '10px solid #333',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
+              <Button 
+                mt="xl" 
+                size="lg" 
+                radius="xl"
+                rightSection={<IconArrowRight size={18} />}
+                onClick={() => navigate('/register')}
               >
-                <Box 
-                  sx={{ 
-                    backgroundColor: '#0083c6', 
-                    height: '100%', 
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    padding: '20px',
-                  }}
-                >
-                  <Text color="white" fw={700} mb={30}>My Account</Text>
-                  <SimpleGrid cols={2} spacing="xs">
-                    {['Profile', 'Documents', 'Results', 'History', 'Settings', 'Support'].map((item) => (
-                      <Box 
-                        key={item}
-                        sx={{ 
-                          backgroundColor: 'white', 
-                          padding: '15px 10px',
-                          borderRadius: 10,
-                          textAlign: 'center',
-                          width: 110,
-                          height: 80,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Box 
-                          sx={{ 
-                            width: 30, 
-                            height: 30, 
-                            backgroundColor: '#f0f0f0',
-                            borderRadius: '50%',
-                            marginBottom: 5
-                          }} 
-                        />
-                        <Text size="xs" fw={500} color="dark">{item}</Text>
-                      </Box>
-                    ))}
-                  </SimpleGrid>
-                </Box>
-              </Box>
+                Get Started Now
+              </Button>
             </Box>
-          </SimpleGrid>
-        </Container>
-      </Box>
-    </Box>
+            <Box style={{ flex: 1 }}>
+              <Image 
+                src="/images/healthcare-illustration.png" 
+                alt="Healthcare illustration"
+                radius="md"
+              />
+            </Box>
+          </Flex>
+        </Box>
+      </Container>
+    </>
   );
 
-  // For authenticated users (based on your original code)
-  const AuthenticatedHome = () => (
-    <Container size="lg">
-      <Stack spacing="xl">
-        {isAdmin() ? (
-          // Admin home page
-          <>
-            <Title order={1}>Welcome, Administrator {user.username}</Title>
-            <Text size="lg" c="dimmed" mb="lg">
-              Use the admin dashboard to manage patients and system statistics
-            </Text>
-            
-            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                <Card.Section p="md" style={{ borderBottom: '4px solid var(--mantine-color-red-6)' }}>
-                  <Title order={3}>Admin Dashboard</Title>
-                </Card.Section>
-                
-                <Text mt="sm" mb="md">
-                  Access system statistics, manage patients, and view all documents in the system.
-                </Text>
-                
-                <Button color="red" fullWidth onClick={() => navigate('/admin/dashboard')}>
-                  Open Dashboard
-                </Button>
-              </Card>
-              
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                <Card.Section p="md" style={{ borderBottom: '4px solid var(--mantine-color-blue-6)' }}>
-                  <Title order={3}>View Documents</Title>
-                </Card.Section>
-                
-                <Text mt="sm" mb="md">
-                  View and download documents in your administrative capacity.
-                </Text>
-                
-                <Button variant="light" fullWidth onClick={() => navigate('/documents')}>
-                  View Documents
-                </Button>
-              </Card>
-            </SimpleGrid>
-          </>
-        ) : (
-          // Patient home page
-          <>
-            <Title order={1}>Welcome back, {user.username}</Title>
-            
-            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                <Card.Section p="md">
-                  <Title order={3}>My Profile</Title>
-                </Card.Section>
-                
-                <Text mt="sm" mb="md">
-                  View and update your personal and medical information.
-                </Text>
-                
-                <Button variant="light" fullWidth onClick={() => navigate('/profile')}>
-                  View Profile
-                </Button>
-              </Card>
-              
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                <Card.Section p="md">
-                  <Title order={3}>My Documents</Title>
-                </Card.Section>
-                
-                <Text mt="sm" mb="md">
-                  Manage your uploaded medical documents and records.
-                </Text>
-                
-                <Button variant="light" fullWidth onClick={() => navigate('/documents')}>
-                  View Documents
-                </Button>
-              </Card>
-              
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                <Card.Section p="md">
-                  <Title order={3}>Upload Document</Title>
-                </Card.Section>
-                
-                <Text mt="sm" mb="md">
-                  Upload a new medical document to your secure storage.
-                </Text>
-                
-                <Button variant="light" fullWidth onClick={() => navigate('/documents/upload')}>
-                  Upload New
-                </Button>
-              </Card>
-            </SimpleGrid>
-          </>
-        )}
-      </Stack>
+  // Admin dashboard homepage
+  const AdminHome = () => (
+    <Stack spacing="xl">
+      <Title order={1}>Welcome, Administrator {user.username}</Title>
+      <Text size="lg" c="dimmed" mb="lg">
+        Manage patient records, documents, and system statistics
+      </Text>
+      
+      <Box 
+        py={30} 
+        px={20}
+        mb={20}
+        sx={(theme) => ({
+          background: `linear-gradient(45deg, ${theme.colors.indigo[7]} 0%, ${theme.colors.blue[5]} 100%)`,
+          borderRadius: theme.radius.md,
+          color: theme.white
+        })}
+      >
+        <Flex align="center" gap="md" wrap="wrap">
+          <IconChartBar size={48} />
+          <div>
+            <Text fw={700} size="xl">Admin Dashboard</Text>
+            <Text size="sm">Access comprehensive system analytics and management tools</Text>
+          </div>
+          <Button 
+            ml="auto" 
+            variant="white" 
+            color="indigo" 
+            radius="xl"
+            onClick={() => navigate('/admin/dashboard')}
+          >
+            Open Dashboard
+          </Button>
+        </Flex>
+      </Box>
+      
+      <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <IconUsers size={32} color={theme.colors.blue[6]} />
+          <Title order={3} mt="md" mb="xs">Manage Patients</Title>
+          <Text size="sm" color="dimmed" mb="lg">
+            View and manage all patient accounts, profiles, and status
+          </Text>
+          <Button 
+            variant="light" 
+            color="blue" 
+            fullWidth 
+            onClick={() => navigate('/admin/patients')}
+          >
+            View Patients
+          </Button>
+        </Paper>
+        
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <IconFileAnalytics size={32} color={theme.colors.violet[6]} />
+          <Title order={3} mt="md" mb="xs">Document Management</Title>
+          <Text size="sm" color="dimmed" mb="lg">
+            Manage all patient medical documents and records
+          </Text>
+          <Button 
+            variant="light" 
+            color="violet" 
+            fullWidth 
+            onClick={() => navigate('/admin/documents')}
+          >
+            View Documents
+          </Button>
+        </Paper>
+        
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <IconHeartRateMonitor size={32} color={theme.colors.green[6]} />
+          <Title order={3} mt="md" mb="xs">System Health</Title>
+          <Text size="sm" color="dimmed" mb="lg">
+            Monitor system performance and user activity
+          </Text>
+          <Button 
+            variant="light" 
+            color="green" 
+            fullWidth 
+            onClick={() => navigate('/admin/dashboard')}
+          >
+            View Statistics
+          </Button>
+        </Paper>
+      </SimpleGrid>
+    </Stack>
+  );
+
+  // Patient dashboard homepage
+  const PatientHome = () => (
+    <Stack spacing="xl">
+      <Title order={1}>Welcome back, {user.username}</Title>
+      <Text c="dimmed" size="lg">
+        Manage your health documents and information in one secure place
+      </Text>
+      
+      <Box 
+        py={30} 
+        px={20}
+        mb={20}
+        sx={(theme) => ({
+          background: `linear-gradient(45deg, ${theme.colors.cyan[7]} 0%, ${theme.colors.blue[5]} 100%)`,
+          borderRadius: theme.radius.md,
+          color: theme.white
+        })}
+      >
+        <Flex align="center" gap="md" wrap="wrap">
+          <IconUserCircle size={48} />
+          <div>
+            <Text fw={700} size="xl">Your Health Profile</Text>
+            <Text size="sm">Keep your medical information up-to-date for better healthcare</Text>
+          </div>
+          <Button 
+            ml="auto" 
+            variant="white" 
+            color="cyan" 
+            radius="xl"
+            onClick={() => navigate('/profile')}
+          >
+            View Profile
+          </Button>
+        </Flex>
+      </Box>
+      
+      <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="lg">
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <IconFolder size={32} color={theme.colors.blue[6]} />
+          <Title order={3} mt="md" mb="xs">My Documents</Title>
+          <Text size="sm" color="dimmed" mb="lg">
+            Access and manage all your medical documents and records
+          </Text>
+          <Button 
+            variant="light" 
+            color="blue" 
+            fullWidth 
+            onClick={() => navigate('/documents')}
+          >
+            View Documents
+          </Button>
+        </Paper>
+        
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <IconCloudUpload size={32} color={theme.colors.teal[6]} />
+          <Title order={3} mt="md" mb="xs">Upload Documents</Title>
+          <Text size="sm" color="dimmed" mb="lg">
+            Add new medical documents to your secure storage
+          </Text>
+          <Button 
+            variant="light" 
+            color="teal" 
+            fullWidth 
+            onClick={() => navigate('/documents/upload')}
+          >
+            Upload New
+          </Button>
+        </Paper>
+        
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <IconShare size={32} color={theme.colors.indigo[6]} />
+          <Title order={3} mt="md" mb="xs">Share Health Data</Title>
+          <Text size="sm" color="dimmed" mb="lg">
+            Securely share your medical information with healthcare providers
+          </Text>
+          <Button 
+            variant="light" 
+            color="indigo" 
+            fullWidth 
+            onClick={() => navigate('/documents')}
+          >
+            Manage Sharing
+          </Button>
+        </Paper>
+      </SimpleGrid>
+    </Stack>
+  );
+
+  return (
+    <Container size="lg" py={30}>
+      {!user ? <GuestLanding /> : isAdmin() ? <AdminHome /> : <PatientHome />}
     </Container>
   );
-
-  return user ? <AuthenticatedHome /> : <LandingPage />;
 };
-
-// Feature card component for the landing page
-const FeatureCard = ({ number, title, description, icon }) => (
-  <Card 
-    p="lg" 
-    radius="md" 
-    sx={(theme) => ({
-      backgroundColor: theme.colors.blue[6],
-      color: 'white',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      textAlign: 'center',
-    })}
-  >
-    <ThemeIcon 
-      size={60} 
-      radius={30} 
-      color="blue.9" 
-      variant="light"
-      mb="sm"
-    >
-      {icon}
-    </ThemeIcon>
-    
-    <Title order={3} size="h2" mb="xs" fw={700}>
-      {number}
-    </Title>
-    
-    <Text fw={500} mb="xs">
-      {title}
-    </Text>
-    
-    <Text size="sm">
-      {description}
-    </Text>
-  </Card>
-);
-
-// Contact card component
-const ContactCard = ({ icon, title, content }) => (
-  <Card p="lg" radius="md" withBorder>
-    <Stack align="center" spacing="sm">
-      {icon && (
-        <ThemeIcon size={50} radius={25} color="blue">
-          {icon}
-        </ThemeIcon>
-      )}
-      <Title order={4}>{title}</Title>
-      {content && <Text>{content}</Text>}
-    </Stack>
-  </Card>
-);
 
 export default HomePage;
