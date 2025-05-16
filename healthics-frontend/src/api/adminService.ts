@@ -150,10 +150,36 @@ const adminService = {
   getPatientDocuments: async (patientId: number) => {
     try {
       console.log(`Fetching documents for patient ${patientId}`);
-      // Use the correct endpoint for fetching patient documents
-      const response = await apiClient.get<Document[]>(`/admin/patients/${patientId}/documents`);
-      console.log('Patient documents response:', response.data);
-      return response.data;
+      
+      // Add more debug info
+      console.log(`Using endpoint: /admin/patients/${patientId}/documents`);
+      
+      // Make the API call with additional logging
+      try {
+        const response = await apiClient.get<Document[]>(`/admin/patients/${patientId}/documents`);
+        console.log('Patient documents response:', response.data);
+        return response.data;
+      } catch (apiError: any) {
+        // Log detailed error information
+        console.error('API Error details:', {
+          status: apiError.response?.status,
+          statusText: apiError.response?.statusText,
+          data: apiError.response?.data,
+          message: apiError.message
+        });
+        
+        // Try to access the endpoint in a different way if needed
+        if (apiError.response?.status === 404) {
+          console.log('Trying alternate approach to fetch documents');
+          // If the main endpoint fails, try to get all documents and filter by patient
+          const allDocsResponse = await apiClient.get<ExtendedDocument[]>('/admin/documents');
+          const filteredDocs = allDocsResponse.data.filter(doc => doc.userId === patientId);
+          console.log(`Found ${filteredDocs.length} documents for patient ${patientId} using alternate method`);
+          return filteredDocs;
+        }
+        
+        throw apiError;
+      }
     } catch (error) {
       console.error(`Error fetching documents for patient ${patientId}:`, error);
       throw error;

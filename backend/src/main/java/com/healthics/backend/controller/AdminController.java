@@ -16,6 +16,8 @@ import com.healthics.backend.model.User;
 import com.healthics.backend.payload.response.DocumentResponse;
 import com.healthics.backend.payload.response.MessageResponse;
 import com.healthics.backend.payload.response.StatisticsResponse;
+import com.healthics.backend.repository.PatientProfileRepository;
+import com.healthics.backend.repository.UserRepository;
 import com.healthics.backend.service.AdminService;
 import com.healthics.backend.service.DocumentService;
 import com.healthics.backend.service.FileStorageService;
@@ -49,6 +51,12 @@ public class AdminController {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PatientProfileRepository patientProfileRepository;
 
     @GetMapping("/patients")
     public ResponseEntity<List<PatientProfile>> getAllPatients() {
@@ -114,12 +122,49 @@ public class AdminController {
     @GetMapping("/patients/{id}/documents")
     public ResponseEntity<?> getPatientDocuments(@PathVariable Long id) {
         try {
-            User user = userService.getUserById(id);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new MessageResponse("Patient not found"));
+            // First try to find the user directly
+            User user = null;
+            try {
+                user = userRepository.findById(id).orElse(null);
+            } catch (Exception e) {
+                System.out.println("Error finding user by ID: " + e.getMessage());
+                // Continue with other approaches
             }
 
+            // If user not found, try to find by patient profile
+            if (user == null) {
+                try {
+                    // Try to find patient profile with this ID
+                    PatientProfile profile = patientProfileRepository.findById(id).orElse(null);
+                    if (profile != null) {
+                        user = profile.getUser();
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error finding patient profile by ID: " + e.getMessage());
+                }
+            }
+
+            // If still not found, try direct document query
+            if (user == null) {
+                // If the user is not found, we can bypass the user lookup and directly
+                // search for documents with this user ID
+                List<Document> documents = documentService.getDocumentsByPatientId(id);
+
+                if (!documents.isEmpty()) {
+                    // If we found documents, convert and return them
+                    List<DocumentResponse> responses = documents.stream()
+                            .map(this::convertToResponse)
+                            .collect(Collectors.toList());
+
+                    return ResponseEntity.ok(responses);
+                } else {
+                    // No documents found for this ID
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(new MessageResponse("Patient with ID " + id + " not found or has no documents"));
+                }
+            }
+
+            // Get the documents using the found user
             List<Document> documents = documentService.getDocumentsByUser(user);
             List<DocumentResponse> responses = documents.stream()
                     .map(this::convertToResponse)

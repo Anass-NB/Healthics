@@ -79,28 +79,81 @@ const AdminPatientDocumentsPage = () => {
         setLoading(true);
         setError(null);
         
-        // Fetch patient details
+        // Skip fetching patient details and directly fetch documents
+        // The patientId in the URL should match the user_id in the database
         try {
-          const patients = await adminService.getAllPatients();
-          const patientData = patients.find(p => p.id === parseInt(patientId));
+          // Directly fetch documents for this patient using the admin API
+          // This avoids the need to find the patient first
+          const patientDocuments = await adminService.getPatientDocuments(parseInt(patientId));
+          console.log('Fetched patient documents:', patientDocuments);
+          setDocuments(patientDocuments);
           
-          if (patientData) {
-            setPatient(patientData);
-            
-            // Fetch documents for this patient using the admin API
+          // If we have documents, we can get patient info from the first document
+          if (patientDocuments.length > 0 && patientDocuments[0].userId) {
+            // Try to fetch patient details separately (optional)
             try {
-              const patientDocuments = await adminService.getPatientDocuments(parseInt(patientId));
-              setDocuments(patientDocuments);
-            } catch (docError) {
-              console.error('Error fetching patient documents:', docError);
-              setError('Could not load patient documents. Please check if the API endpoint is implemented.');
+              const patients = await adminService.getAllPatients();
+              const patientData = patients.find(p => 
+                // Try matching with user.id first, as that's likely what the URL ID represents
+                p.user.id === parseInt(patientId) || 
+                // Or try with patient profile id as fallback
+                p.id === parseInt(patientId)
+              );
+              
+              if (patientData) {
+                setPatient(patientData);
+              } else {
+                console.log(`Could not find patient record for ID ${patientId}, but documents were found`);
+                // Create a minimal patient object with what we know
+                setPatient({
+                  id: parseInt(patientId),
+                  user: {
+                    id: parseInt(patientId),
+                    username: patientDocuments[0].username || 'Unknown',
+                    email: '',
+                    roles: [],
+                    active: true
+                  },
+                  firstName: '',
+                  lastName: '',
+                  dateOfBirth: '',
+                  phoneNumber: '',
+                  address: '',
+                  medicalHistory: '',
+                  allergies: '',
+                  medications: '',
+                  emergencyContact: ''
+                });
+              }
+            } catch (patientError) {
+              console.error('Error fetching patient details:', patientError);
+              // Continue with documents display even if patient details failed
             }
-          } else {
-            setError(`Patient with ID ${patientId} not found`);
+          } else if (patientDocuments.length === 0) {
+            // No documents found, but don't show error
+            console.log(`No documents found for patient ID ${patientId}`);
+            
+            // Try to get patient info anyway
+            try {
+              const patients = await adminService.getAllPatients();
+              const patientData = patients.find(p => 
+                p.user.id === parseInt(patientId) || 
+                p.id === parseInt(patientId)
+              );
+              
+              if (patientData) {
+                setPatient(patientData);
+              } else {
+                setError(`Patient with ID ${patientId} not found`);
+              }
+            } catch (patientError) {
+              console.error('Error fetching patient details:', patientError);
+              setError(`Patient with ID ${patientId} not found`);
+            }
           }
-        } catch (patientError) {
-          console.error('Could not fetch patient details:', patientError);
-          setError('Failed to load patient information');
+        } catch (docError) {
+          console.error('Error fetching patient documents:', docError);
+          setError('Could not load patient documents. ' + (docError.response?.data?.message || ''));
         }
       } catch (error: any) {
         console.error('Error in AdminPatientDocumentsPage:', error);
