@@ -4,7 +4,7 @@ interface RegisterRequest {
   username: string;
   email: string;
   password: string;
-  roles: string[]; // Changed from role to roles to match backend
+  role: string[]; // Changed back to role to match backend's expected field
 }
 
 interface LoginRequest {
@@ -23,7 +23,7 @@ interface AuthResponse {
 
 const authService = {
   register: async (data: RegisterRequest) => {
-    // Added /signup to the endpoint path to match backend
+    // Make sure this endpoint matches the one in AuthController.java
     const response = await apiClient.post<any>('/auth/register', data);
     return response.data;
   },

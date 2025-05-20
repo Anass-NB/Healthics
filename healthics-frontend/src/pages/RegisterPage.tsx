@@ -9,7 +9,6 @@ import {
   Button, 
   Text, 
   Stack, 
-  Anchor, 
   Alert,
   Group,
   Divider,
@@ -18,8 +17,6 @@ import {
   Image,
   Flex,
   ThemeIcon,
-  Stepper,
-  rem
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useAuth } from '../context/AuthContext';
@@ -40,7 +37,6 @@ const RegisterPage = () => {
   const { register, error, clearError } = useAuth();
   const [loading, setLoading] = useState(false);
   const theme = useMantineTheme();
-  const [activeStep, setActiveStep] = useState(0);
   
   const form = useForm({
     initialValues: {
@@ -61,24 +57,7 @@ const RegisterPage = () => {
     },
   });
 
-  const nextStep = () => {
-    const currentFieldsToValidate = activeStep === 0 
-      ? ['username', 'email'] 
-      : ['password', 'confirmPassword'];
-      
-    const validation = form.validate(currentFieldsToValidate.reduce((acc, field) => {
-      acc[field] = form.values[field];
-      return acc;
-    }, {}));
-    
-    if (validation.hasErrors) return;
-    
-    setActiveStep((current) => current + 1);
-  };
-
-  const prevStep = () => setActiveStep((current) => current - 1);
-
-  const handleSubmit = async (values: typeof form.values) => {
+  const handleSubmit = async (values) => {
     try {
       setLoading(true);
       await register(values.username, values.email, values.password);
@@ -107,17 +86,17 @@ const RegisterPage = () => {
         {/* Left side - Features and image */}
         <Box w={{ base: '100%', md: '50%' }} ta="center" order={{ base: 2, md: 1 }}>
           <Box>
-            <Title order={2} mb={rem(30)} color="blue.7">
+            <Title order={2} mb={30} color="blue.7">
               Join Healthics Today
             </Title>
-            <Text mb={rem(30)} size="lg">
+            <Text mb={30} size="lg">
               Create your account to start managing your health journey
             </Text>
             
             <Image 
               src="/images/register-illustration.png" 
               radius="md"
-              mb={rem(30)}
+              mb={30}
               style={{ maxWidth: 400, margin: '0 auto' }}
             />
 
@@ -220,72 +199,60 @@ const RegisterPage = () => {
               </Alert>
             )}
 
-            <Stepper active={activeStep} breakpoint="sm" color="blue" mb="xl">
-              <Stepper.Step label="Account Details">
-                <form>
-                  <Stack>
-                    <TextInput
-                      required
-                      label="Username"
-                      placeholder="Choose a username"
-                      icon={<IconUser size={16} />}
-                      radius="md"
-                      size="md"
-                      {...form.getInputProps('username')}
-                    />
+            <form onSubmit={form.onSubmit(handleSubmit)}>
+              <Stack>
+                <TextInput
+                  required
+                  label="Username"
+                  placeholder="Choose a username"
+                  icon={<IconUser size={16} />}
+                  radius="md"
+                  size="md"
+                  {...form.getInputProps('username')}
+                />
 
-                    <TextInput
-                      required
-                      label="Email"
-                      placeholder="your@email.com"
-                      icon={<IconMail size={16} />}
-                      radius="md"
-                      size="md"
-                      {...form.getInputProps('email')}
-                    />
+                <TextInput
+                  required
+                  label="Email"
+                  placeholder="your@email.com"
+                  icon={<IconMail size={16} />}
+                  radius="md"
+                  size="md"
+                  {...form.getInputProps('email')}
+                />
 
-                    <Button fullWidth mt="xl" onClick={nextStep} radius="xl" size="md">
-                      Next Step
-                    </Button>
-                  </Stack>
-                </form>
-              </Stepper.Step>
+                <PasswordInput
+                  required
+                  label="Password"
+                  placeholder="Choose a password"
+                  icon={<IconLock size={16} />}
+                  radius="md"
+                  size="md"
+                  {...form.getInputProps('password')}
+                />
 
-              <Stepper.Step label="Security">
-                <form onSubmit={form.onSubmit(handleSubmit)}>
-                  <Stack>
-                    <PasswordInput
-                      required
-                      label="Password"
-                      placeholder="Choose a password"
-                      icon={<IconLock size={16} />}
-                      radius="md"
-                      size="md"
-                      {...form.getInputProps('password')}
-                    />
+                <PasswordInput
+                  required
+                  label="Confirm Password"
+                  placeholder="Confirm your password"
+                  icon={<IconLock size={16} />}
+                  radius="md"
+                  size="md"
+                  {...form.getInputProps('confirmPassword')}
+                />
 
-                    <PasswordInput
-                      required
-                      label="Confirm Password"
-                      placeholder="Confirm your password"
-                      icon={<IconLock size={16} />}
-                      radius="md"
-                      size="md"
-                      {...form.getInputProps('confirmPassword')}
-                    />
-
-                    <Group grow mt="xl">
-                      <Button variant="outline" onClick={prevStep} radius="xl" size="md">
-                        Back
-                      </Button>
-                      <Button type="submit" loading={loading} radius="xl" size="md">
-                        Register
-                      </Button>
-                    </Group>
-                  </Stack>
-                </form>
-              </Stepper.Step>
-            </Stepper>
+                <Button 
+                  type="submit" 
+                  loading={loading} 
+                  radius="xl" 
+                  size="md" 
+                  mt="xl" 
+                  fullWidth
+                >
+                  Register
+                </Button>
+              </Stack>
+            </form>
 
             <Divider label="Already have an account?" labelPosition="center" my="lg" />
 

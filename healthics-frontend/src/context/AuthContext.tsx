@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         username,
         email,
         password,
-        roles: ['patient'] // Changed from role to roles to match backend
+        role: ['patient'] // Changed from roles to role to match backend's expected field
       });
     } catch (err: any) {
       console.error('Registration error:', err.response?.data || err);
