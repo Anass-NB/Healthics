@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Container, 
-  Title, 
   Text, 
   Button, 
-  Group, 
   Card, 
   Grid, 
   Badge, 
@@ -13,11 +11,13 @@ import {
   LoadingOverlay, 
   Alert,
   ActionIcon,
-  Stack,
-  Paper
+  Paper,
+  Title,
+  Box
 } from '@mantine/core';
 import { IconDownload, IconArrowLeft, IconFile } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import documentService from '../api/documentService';
 
 // Define Document interface to match API response exactly
 interface Document {
@@ -36,15 +36,13 @@ interface Document {
   downloadUrl: string;
 }
 
-// Import your actual API services
-import documentService from '../api/documentService';
-
 const AdminDocumentDetailPage = () => {
   const { documentId } = useParams<{ documentId: string }>();
   const navigate = useNavigate();
   const [document, setDocument] = useState<Document | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadLoading, setDownloadLoading] = useState(false);
   
   useEffect(() => {
     const fetchDocument = async () => {
@@ -53,11 +51,8 @@ const AdminDocumentDetailPage = () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Fetch document using regular endpoint (admin would have access to all documents)
-        const documentData = await documentService.getDocumentById(parseInt(documentId));
-        setDocument(documentData);
-        
+        const data = await documentService.getDocumentById(parseInt(documentId));
+        setDocument(data);
       } catch (err: any) {
         console.error('Error fetching document details:', err);
         setError(err.response?.data?.message || 'Failed to load document details');
@@ -69,17 +64,35 @@ const AdminDocumentDetailPage = () => {
     fetchDocument();
   }, [documentId]);
 
-  const handleDownload = () => {
-    if (!document) return;
+  const handleDownload = async () => {
+    if (!documentId || !document) return;
     
-    // Use the direct download URL from the API response
-    window.open(document.downloadUrl, '_blank');
-    
-    notifications.show({
-      title: 'Success',
-      message: 'Document download started',
-      color: 'green',
-    });
+    try {
+      setDownloadLoading(true);
+      // Use our updated service method that preserves authentication
+      await documentService.downloadDocument(parseInt(documentId));
+      
+      notifications.show({
+        title: 'Success',
+        message: 'Document download started',
+        color: 'green',
+      });
+    } catch (error: any) {
+      console.error('Download error:', error);
+      
+      // Check specifically for authentication errors
+      const errorMessage = error.response?.status === 401 
+        ? 'Authentication required. Please log in again to download this document.'
+        : error.response?.data?.message || 'Failed to download document. Please try again.';
+        
+      notifications.show({
+        title: 'Error',
+        message: errorMessage,
+        color: 'red',
+      });
+    } finally {
+      setDownloadLoading(false);
+    }
   };
 
   const handleGoBack = () => {
@@ -104,7 +117,7 @@ const AdminDocumentDetailPage = () => {
 
   if (loading) {
     return (
-      <Container size="md" pos="relative" h={400}>
+      <Container style={{ position: 'relative', height: 400 }}>
         <LoadingOverlay visible />
       </Container>
     );
@@ -112,11 +125,11 @@ const AdminDocumentDetailPage = () => {
 
   if (error) {
     return (
-      <Container size="md">
+      <Container>
         <Alert color="red" title="Error">
           {error}
         </Alert>
-        <Button mt="md" onClick={handleGoBack}>
+        <Button style={{ marginTop: '16px' }} onClick={handleGoBack}>
           Back
         </Button>
       </Container>
@@ -125,11 +138,11 @@ const AdminDocumentDetailPage = () => {
 
   if (!document) {
     return (
-      <Container size="md">
+      <Container>
         <Alert color="red" title="Not Found">
           Document not found.
         </Alert>
-        <Button mt="md" onClick={handleGoBack}>
+        <Button style={{ marginTop: '16px' }} onClick={handleGoBack}>
           Back
         </Button>
       </Container>
@@ -137,91 +150,105 @@ const AdminDocumentDetailPage = () => {
   }
 
   return (
-    <Container size="md">
-      <Group mb={30}>
+    <Container>
+      <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
         <ActionIcon size="lg" variant="subtle" onClick={handleGoBack}>
           <IconArrowLeft />
         </ActionIcon>
         <Title order={2}>Document Details</Title>
-      </Group>
+      </Box>
 
-      <Paper shadow="xs" withBorder p="lg" mb="lg">
-        <Group position="apart" mb="md">
+      <Paper style={{ padding: '20px', marginBottom: '20px', border: '1px solid #eee', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <Title order={3}>{document.title}</Title>
           <Button 
-            leftIcon={<IconDownload size="1rem" />} 
             onClick={handleDownload}
+            loading={downloadLoading}
+            style={{ display: 'flex', alignItems: 'center' }}
           >
+            <IconDownload size="1rem" style={{ marginRight: '0.5rem' }} />
             Download
           </Button>
-        </Group>
+        </Box>
 
         <Grid>
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Card withBorder shadow="sm">
-              <Card.Section withBorder inheritPadding py="xs">
-                <Group position="apart">
-                  <Text weight={500}>Document Information</Text>
-                  <Badge size="lg">{document.categoryName}</Badge>
-                </Group>
-              </Card.Section>
+            <Card style={{ border: '1px solid #eee', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <Box style={{ 
+                borderBottom: '1px solid #eee', 
+                padding: '8px 16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <Text style={{ fontWeight: 500 }}>Document Information</Text>
+                <Badge>{document.categoryName}</Badge>
+              </Box>
               
-              <Stack spacing="xs" mt="md">
-                <Group>
-                  <Text size="sm" weight={500} w={150}>Document Date:</Text>
+              <Box style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Box style={{ display: 'flex' }}>
+                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Document Date:</Text>
                   <Text>{formatDate(document.documentDate)}</Text>
-                </Group>
+                </Box>
                 
-                <Group>
-                  <Text size="sm" weight={500} w={150}>Doctor:</Text>
+                <Box style={{ display: 'flex' }}>
+                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Doctor:</Text>
                   <Text>{document.doctorName || 'Not specified'}</Text>
-                </Group>
+                </Box>
                 
-                <Group>
-                  <Text size="sm" weight={500} w={150}>Hospital/Clinic:</Text>
+                <Box style={{ display: 'flex' }}>
+                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Hospital/Clinic:</Text>
                   <Text>{document.hospitalName || 'Not specified'}</Text>
-                </Group>
-              </Stack>
+                </Box>
+              </Box>
             </Card>
           </Grid.Col>
           
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Card withBorder shadow="sm" h="100%">
-              <Card.Section withBorder inheritPadding py="xs">
-                <Group position="apart">
-                  <Text weight={500}>File Information</Text>
-                  <IconFile size="1.2rem" />
-                </Group>
-              </Card.Section>
+            <Card style={{ 
+              border: '1px solid #eee', 
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              height: '100%'
+            }}>
+              <Box style={{ 
+                borderBottom: '1px solid #eee', 
+                padding: '8px 16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <Text style={{ fontWeight: 500 }}>File Information</Text>
+                <IconFile size="1.2rem" />
+              </Box>
               
-              <Stack spacing="xs" mt="md">
-                <Group>
-                  <Text size="sm" weight={500} w={150}>File Type:</Text>
+              <Box style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Box style={{ display: 'flex' }}>
+                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>File Type:</Text>
                   <Text>{document.fileType}</Text>
-                </Group>
+                </Box>
                 
-                <Group>
-                  <Text size="sm" weight={500} w={150}>File Size:</Text>
+                <Box style={{ display: 'flex' }}>
+                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>File Size:</Text>
                   <Text>{formatFileSize(document.fileSize)}</Text>
-                </Group>
+                </Box>
                 
-                <Group>
-                  <Text size="sm" weight={500} w={150}>Upload Date:</Text>
+                <Box style={{ display: 'flex' }}>
+                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Upload Date:</Text>
                   <Text>{formatDate(document.uploadDate)}</Text>
-                </Group>
+                </Box>
                 
-                <Group>
-                  <Text size="sm" weight={500} w={150}>Last Modified:</Text>
+                <Box style={{ display: 'flex' }}>
+                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Last Modified:</Text>
                   <Text>{formatDate(document.lastModifiedDate)}</Text>
-                </Group>
-              </Stack>
+                </Box>
+              </Box>
             </Card>
           </Grid.Col>
         </Grid>
 
-        <Divider my="lg" />
+        <Divider style={{ margin: '20px 0' }} />
         
-        <Text weight={500} mb="xs">Description</Text>
+        <Text style={{ fontWeight: 500, marginBottom: '8px' }}>Description</Text>
         <Text>{document.description || 'No description provided.'}</Text>
       </Paper>
     </Container>

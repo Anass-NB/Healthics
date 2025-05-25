@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Create a custom axios instance for API requests
 const apiClient = axios.create({
   baseURL: 'http://localhost:8080/api', // Make sure this matches the backend URL
   headers: {

@@ -76,12 +76,17 @@ const DocumentDetailPage = () => {
         title: 'Success',
         message: 'Document download started',
         color: 'green',
-      });
-    } catch (error: any) {
+      });    } catch (error: any) {
       console.error('Download error:', error);
+      
+      // Check specifically for authentication errors
+      const errorMessage = error.response?.status === 401 
+        ? 'Authentication required. Please log in again to download this document.'
+        : error.response?.data?.message || 'Failed to download document. Please try again.';
+        
       notifications.show({
         title: 'Error',
-        message: error.response?.data?.message || 'Failed to download document. Please try again.',
+        message: errorMessage,
         color: 'red',
       });
     } finally {

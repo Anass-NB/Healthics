@@ -95,13 +95,20 @@ const documentService = {
       throw error;
     }
   },
-
   downloadDocument: async (id: number) => {
     try {
-      // Instead of opening the URL directly, we use axios to handle the request
-      // This properly includes the auth token
+      // Get the current authentication token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required to download documents');
+      }
+
+      // Use axios to handle the request with explicit authentication headers
       const response = await apiClient.get(`/documents/${id}/download`, {
         responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       // Create a blob URL and trigger the download
