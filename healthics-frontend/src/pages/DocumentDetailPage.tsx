@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Container, 
-  Title, 
   Text, 
   Button, 
   Group, 
@@ -15,7 +14,8 @@ import {
   ActionIcon,
   Paper
 } from '@mantine/core';
-import { IconDownload, IconEdit, IconTrash, IconArrowLeft } from '@tabler/icons-react';
+import { IconDownload, IconEdit, IconTrash } from '@tabler/icons-react';
+import PageHeader from '../components/PageHeader';
 import documentService from '../api/documentService';
 import { notifications } from '@mantine/notifications';
 
@@ -146,8 +146,8 @@ const DocumentDetailPage = () => {
         <Alert color="red" title="Error">
           {error}
         </Alert>
-        <Button mt="md" onClick={() => navigate('/documents')}>
-          Back to Documents
+        <Button mt="md" onClick={() => navigate(-1)}>
+          Go Back
         </Button>
       </Container>
     );
@@ -159,8 +159,8 @@ const DocumentDetailPage = () => {
         <Alert color="red" title="Not Found">
           Document not found.
         </Alert>
-        <Button mt="md" onClick={() => navigate('/documents')}>
-          Back to Documents
+        <Button mt="md" onClick={() => navigate(-1)}>
+          Go Back
         </Button>
       </Container>
     );
@@ -168,12 +168,9 @@ const DocumentDetailPage = () => {
 
   return (
     <Container size="md">
-      <Group mb="lg">
-        <ActionIcon size="lg" variant="subtle" onClick={() => navigate('/documents')}>
-          <IconArrowLeft />
-        </ActionIcon>
-        <Title>{document.title}</Title>
-      </Group>
+      <PageHeader 
+        title={document.title}
+      />
 
       <Paper shadow="xs" p="lg" withBorder mb="lg">
         <Group position="right" mb="lg">

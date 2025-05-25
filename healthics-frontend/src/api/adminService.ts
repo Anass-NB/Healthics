@@ -190,36 +190,21 @@ const adminService = {
   downloadDocument: async (documentId: number) => {
     try {
       console.log(`Admin downloading document ${documentId}`);
-      
-      // Instead of opening URL directly, use axios to properly include auth token
+      // Use axios to properly include auth token
       const response = await apiClient.get(`/admin/documents/${documentId}/download`, {
         responseType: 'blob',
       });
-      
-      // Create a blob URL and trigger the download
       const blob = new Blob([response.data], { type: response.headers['content-type'] });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      
       // Try to get the filename from Content-Disposition header or use default
       const contentDisposition = response.headers['content-disposition'];
       let filename = `document-${documentId}`;
-      
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
         if (filenameMatch && filenameMatch[1]) {
           filename = filenameMatch[1].replace(/['"]/g, '');
         }
       }
-      
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      return true;
+      return { blob, filename };
     } catch (error) {
       console.error(`Error downloading document ${documentId}:`, error);
       throw error;
