@@ -17,7 +17,7 @@ public class HealthAdvisorService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${groq.api.key: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}")
+    @Value("${groq.api.key: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}")
     private String groqApiKey;
 
     private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -69,6 +69,8 @@ public class HealthAdvisorService {
 
             return result;
         } catch (Exception e) {
+            e.printStackTrace(); // Full stack trace
+
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", "error");
             errorResponse.put("message", e.getMessage());
@@ -127,6 +129,8 @@ public class HealthAdvisorService {
 
             return result;
         } catch (Exception e) {
+            e.printStackTrace(); // Full stack trace
+
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", "error");
             errorResponse.put("message", e.getMessage());
@@ -221,6 +225,8 @@ public class HealthAdvisorService {
 
             return result;
         } catch (Exception e) {
+            e.printStackTrace(); // Full stack trace
+
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("status", "error");
             errorResponse.put("message", e.getMessage());
