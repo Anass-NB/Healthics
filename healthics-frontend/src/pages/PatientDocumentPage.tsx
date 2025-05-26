@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Title, Button, Group, Table, Badge, ActionIcon, Text, Menu, Alert, Paper, LoadingOverlay } from '@mantine/core';
+import { Container, Button, Group, Table, Badge, ActionIcon, Text, Menu, Alert, Paper, LoadingOverlay } from '@mantine/core';
 import documentService, { Document, DocumentCategory } from '../api/documentService';
 import adminService from '../api/adminService';
 import { notifications } from '@mantine/notifications';
+import PageHeader from '../components/PageHeader';
 
 const PatientDocumentsPage = () => {
   const { patientId } = useParams<{ patientId: string }>();
@@ -111,19 +112,15 @@ const PatientDocumentsPage = () => {
     <Container size="lg" pos="relative">
       {loading && <LoadingOverlay visible />}
       
-      <Group justify="space-between" mb="lg">
-        <div>
-          <Title>Documents for Patient</Title>
-          {patientInfo && (
-            <Text c="dimmed" mt="xs">
-              {patientInfo.name} ({patientInfo.username}) - {patientInfo.email}
-            </Text>
-          )}
-        </div>
-        <Button variant="outline" onClick={() => navigate('/admin/dashboard')}>
-          Back to Dashboard
-        </Button>
-      </Group>
+      <PageHeader 
+        title="Documents for Patient"
+        subtitle={patientInfo ? `${patientInfo.name} (${patientInfo.username}) - ${patientInfo.email}` : undefined}
+        action={
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            Go Back
+          </Button>
+        }
+      />
 
       {error && (
         <Alert color="red" mb="lg" onClose={() => setError(null)}>

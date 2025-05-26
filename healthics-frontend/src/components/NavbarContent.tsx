@@ -86,13 +86,14 @@ const NavbarContent = () => {
             active={location.pathname === '/admin/documents'}
           />
           
-          <NavLink
+          
+          {/* <NavLink
             component={Link}
             to="/documents"
             label="Admin Documents"
             leftSection={<IconFileText size={20} />}
             active={location.pathname === '/documents'}
-          />
+          /> */}
         </>
       )}
     </>

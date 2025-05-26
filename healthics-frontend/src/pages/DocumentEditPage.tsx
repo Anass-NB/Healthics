@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Title, TextInput, Button, Select, Textarea, Group, Stack, Alert, LoadingOverlay } from '@mantine/core';
+import { Container, TextInput, Button, Select, Textarea, Group, Stack, Alert, LoadingOverlay } from '@mantine/core';
+import PageHeader from '../components/PageHeader';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import documentService, { DocumentCategory, Document } from '../api/documentService';
@@ -120,8 +121,8 @@ const DocumentEditPage = () => {
         <Alert color="red" title="Error">
           {error}
         </Alert>
-        <Button mt="md" onClick={() => navigate('/documents')}>
-          Back to Documents
+        <Button mt="md" onClick={() => navigate(-1)}>
+          Go Back
         </Button>
       </Container>
     );
@@ -129,7 +130,7 @@ const DocumentEditPage = () => {
 
   return (
     <Container size="md">
-      <Title mb="lg">Edit Document</Title>
+      <PageHeader title="Edit Document" />
 
       {error && (
         <Alert color="red" mb="lg" onClose={() => setError(null)}>
@@ -190,7 +191,7 @@ const DocumentEditPage = () => {
           />
 
           <Group justify="space-between" mt="xl">
-            <Button variant="subtle" onClick={() => navigate(`/documents/${id}`)}>
+            <Button variant="subtle" onClick={() => navigate(-1)}>
               Cancel
             </Button>
             <Button type="submit" loading={submitting}>

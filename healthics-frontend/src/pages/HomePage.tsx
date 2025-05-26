@@ -33,6 +33,7 @@ import {
   IconFileAnalytics,
   IconCloudUpload
 } from '@tabler/icons-react';
+import { IconStethoscope } from '@tabler/icons-react';
 
 const HomePage = () => {
   const { user, isAdmin } = useAuth();
@@ -360,6 +361,21 @@ const HomePage = () => {
             Manage Sharing
           </Button>
         </Paper>
+        <Paper shadow="md" p="xl" radius="md" withBorder>
+  <IconStethoscope size={32} color={theme.colors.cyan[6]} />
+  <Title order={3} mt="md" mb="xs">Health Advisor</Title>
+  <Text size="sm" color="dimmed" mb="lg">
+    Check symptoms and chat with AI health assistant
+  </Text>
+  <Button 
+    variant="light" 
+    color="cyan" 
+    fullWidth 
+    onClick={() => navigate('/health-advisor')}
+  >
+    Open Advisor
+  </Button>
+</Paper>
       </SimpleGrid>
     </Stack>
   );

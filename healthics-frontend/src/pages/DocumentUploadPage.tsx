@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Title, TextInput, Button, Select, Textarea, Group, Stack, Alert, Text } from '@mantine/core';
+import { Container, TextInput, Button, Select, Textarea, Group, Stack, Alert, Text } from '@mantine/core';
+import PageHeader from '../components/PageHeader';
 import { DateTimePicker } from '@mantine/dates';
 import { Dropzone, FileWithPath } from '@mantine/dropzone';
 import { useForm } from '@mantine/form';
@@ -100,7 +101,7 @@ const DocumentUploadPage = () => {
 
   return (
     <Container size="md">
-      <Title mb="lg">Upload Document</Title>
+      <PageHeader title="Upload Document" />
 
       {error && (
         <Alert color="red" mb="lg" onClose={() => setError(null)}>
@@ -193,7 +194,7 @@ const DocumentUploadPage = () => {
           </Stack>
 
           <Group justify="space-between" mt="xl">
-            <Button variant="subtle" onClick={() => navigate('/documents')}>
+            <Button variant="subtle" onClick={() => navigate(-1)}>
               Cancel
             </Button>
             <Button type="submit" loading={submitting} disabled={loading}>
