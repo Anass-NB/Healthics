@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
   Container,
-  Title,
   Paper,
   Table,
   Badge,
-  Button,
   Group,
   Text,
   TextInput,
@@ -15,14 +13,14 @@ import {
   Alert,
   ActionIcon,
   Tooltip,
-  Flex,
-  Box
+  Stack
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import adminService from '../api/adminService';
-import { IconSearch, IconEye, IconTrash, IconDownload, IconFolder } from '@tabler/icons-react';
+import { IconSearch, IconEye, IconDownload, IconFolder, IconDashboard } from '@tabler/icons-react';
 import { Document } from '../api/documentService';
+import PageHeader from '../components/PageHeader';
 
 interface ExtendedDocument extends Document {
   userId: number;
@@ -178,53 +176,106 @@ const AdminAllDocumentsPage = () => {
   );
   
   const totalPages = Math.ceil(filteredDocs.length / ITEMS_PER_PAGE);
-
   return (
-    <Container size="lg" pos="relative">
+    <Container size="lg" pos="relative" py="xl">
       <LoadingOverlay visible={loading} />
-      <Title mb="md">All Patient Documents</Title>
+      
+      <PageHeader
+        title="All Patient Documents"
+        subtitle="Browse and manage all documents in the system"
+        action={
+          <Group gap="sm">
+            <ActionIcon 
+              variant="light" 
+              color="blue"
+              size="lg"
+              radius="xl"
+              onClick={() => navigate('/admin/dashboard')}
+            >
+              <IconDashboard size={20} />
+            </ActionIcon>
+          </Group>
+        }
+      />
       
       {error && (
-        <Alert color="red" title="Error" mb="md" withCloseButton onClose={() => setError(null)}>
+        <Alert 
+          color="red" 
+          title="Error" 
+          mb="xl" 
+          withCloseButton 
+          onClose={() => setError(null)}
+          radius="md"
+        >
           {error}
         </Alert>
       )}
       
-      <Paper shadow="xs" p="md" withBorder mb="lg">
-        <Group justify="space-between" mb="md">
-          <Group>
-            <TextInput
-              placeholder="Search documents..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.currentTarget.value)}
-              leftSection={<IconSearch size={16} />}
-              style={{ width: 250 }}
-            />
-            
-            <Select
-              placeholder="Filter by category"
-              data={categories}
-              value={categoryFilter}
-              onChange={setCategoryFilter}
-              style={{ width: 180 }}
-            />
-            
-            <Select
-              placeholder="Filter by patient"
-              data={patients}
-              value={patientFilter}
-              onChange={setPatientFilter}
-              style={{ width: 180 }}
-            />
-          </Group>
-        </Group>
-        
-        <Text size="sm" mb="md">
+      <Paper 
+        shadow="sm" 
+        p="xl" 
+        radius="xl" 
+        mb="lg"
+        style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}
+      >
+        <Stack gap="lg">
+          <Group justify="space-between" align="flex-end">
+            <Group gap="md">
+              <TextInput
+                placeholder="Search documents..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.currentTarget.value)}
+                leftSection={<IconSearch size={16} />}
+                w={250}
+                radius="md"
+                size="sm"
+              />
+              
+              <Select
+                placeholder="Filter by category"
+                data={categories}
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+                w={180}
+                radius="md"
+                size="sm"
+              />
+              
+              <Select
+                placeholder="Filter by patient"
+                data={patients}
+                value={patientFilter}
+                onChange={setPatientFilter}
+                w={180}
+                radius="md"
+                size="sm"
+              />
+            </Group>
+          </Group>        
+        <Text size="sm" c="dimmed" mb="md">
           Showing {paginatedDocuments.length} of {filteredDocs.length} documents
         </Text>
         
-        <Table striped highlightOnHover>
-          <Table.Thead>
+        <Table 
+          striped 
+          highlightOnHover 
+          withTableBorder 
+          withColumnBorders
+          style={{
+            borderRadius: 'var(--mantine-radius-md)',
+            overflow: 'hidden'
+          }}
+        >
+          <Table.Thead 
+            style={{
+              background: 'rgba(20, 184, 166, 0.1)'
+            }}
+          >
             <Table.Tr>
               <Table.Th>ID</Table.Th>
               <Table.Th>Title</Table.Th>
@@ -235,10 +286,9 @@ const AdminAllDocumentsPage = () => {
               <Table.Th>Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
-          <Table.Tbody>
-            {paginatedDocuments.length === 0 ? (
+          <Table.Tbody>            {paginatedDocuments.length === 0 ? (
               <Table.Tr>
-                <Table.Td colSpan={7} align="center">No documents found matching the criteria</Table.Td>
+                <Table.Td colSpan={7} ta="center">No documents found matching the criteria</Table.Td>
               </Table.Tr>
             ) : (
               paginatedDocuments.map((doc) => (
@@ -246,12 +296,23 @@ const AdminAllDocumentsPage = () => {
                   <Table.Td>{doc.id}</Table.Td>
                   <Table.Td>{doc.title}</Table.Td>
                   <Table.Td>
-                    <Badge color="blue" style={{ cursor: 'pointer' }} onClick={() => handleViewPatientDocuments(doc.userId)}>
+                    <Badge 
+                      color="blue" 
+                      variant="light"
+                      radius="md"
+                      size="sm"
+                      style={{ cursor: 'pointer' }} 
+                      onClick={() => handleViewPatientDocuments(doc.userId)}
+                    >
                       {doc.username}
                     </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    <Badge color="cyan">
+                  </Table.Td>                  <Table.Td>
+                    <Badge 
+                      color="medicalBlue" 
+                      variant="light"
+                      radius="md"
+                      size="sm"
+                    >
                       {doc.categoryName || 'Uncategorized'}
                     </Badge>
                   </Table.Td>
@@ -264,18 +325,21 @@ const AdminAllDocumentsPage = () => {
                           variant="light" 
                           color="blue"
                           onClick={() => handleViewDocument(doc.id)}
+                          radius="md"
+                          size="sm"
                         >
-                          <IconEye size={18} />
+                          <IconEye size={16} />
                         </ActionIcon>
                       </Tooltip>
-                      
-                      <Tooltip label="Download">
+                        <Tooltip label="Download">
                         <ActionIcon 
                           variant="light" 
-                          color="green"
+                          color="medicalBlue"
                           onClick={() => handleDownloadDocument(doc.id)}
+                          radius="md"
+                          size="sm"
                         >
-                          <IconDownload size={18} />
+                          <IconDownload size={16} />
                         </ActionIcon>
                       </Tooltip>
                       
@@ -284,8 +348,10 @@ const AdminAllDocumentsPage = () => {
                           variant="light" 
                           color="violet"
                           onClick={() => handleViewPatientDocuments(doc.userId)}
+                          radius="md"
+                          size="sm"
                         >
-                          <IconFolder size={18} />
+                          <IconFolder size={16} />
                         </ActionIcon>
                       </Tooltip>
                     </Group>
@@ -294,17 +360,19 @@ const AdminAllDocumentsPage = () => {
               ))
             )}
           </Table.Tbody>
-        </Table>
-        
-        {totalPages > 1 && (
-          <Group justify="center" mt="md">
+        </Table>          {totalPages > 1 && (
+          <Group justify="center" mt="lg">
             <Pagination 
               value={activePage} 
               onChange={setActivePage} 
-              total={totalPages} 
+              total={totalPages}
+              color="medicalBlue"
+              radius="md"
+              size="sm"
             />
           </Group>
         )}
+        </Stack>
       </Paper>
     </Container>
   );

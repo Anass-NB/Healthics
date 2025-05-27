@@ -32,6 +32,13 @@ import {
   IconBuildingHospital
 } from '@tabler/icons-react';
 
+interface FormValues {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 const RegisterPage = () => {
   const navigate = useNavigate();
   const { register, error, clearError } = useAuth();
@@ -57,7 +64,7 @@ const RegisterPage = () => {
     },
   });
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values: FormValues) => {
     try {
       setLoading(true);
       await register(values.username, values.email, values.password);
@@ -74,19 +81,16 @@ const RegisterPage = () => {
       setLoading(false);
     }
   };
-
   return (
-    <Container size="xl" py={40}>
-      <Flex
-        direction={{ base: 'column', md: 'row' }}
+    <Container size="xl" py={40} style={{ minHeight: '100vh' }}>      <Flex
+        direction={{ base: 'column-reverse', md: 'row' }}
         gap={{ base: 30, md: 50 }}
         justify="space-between"
         align="center"
       >
         {/* Left side - Features and image */}
-        <Box w={{ base: '100%', md: '50%' }} ta="center" order={{ base: 2, md: 1 }}>
-          <Box>
-            <Title order={2} mb={30} color="blue.7">
+        <Box w={{ base: '100%', md: '50%' }} ta="center">
+          <Box>            <Title order={2} mb={30} c="medicalBlue.7">
               Join Healthics Today
             </Title>
             <Text mb={30} size="lg">
@@ -98,15 +102,12 @@ const RegisterPage = () => {
               radius="md"
               mb={30}
               style={{ maxWidth: 400, margin: '0 auto' }}
-            />
-
-            <Stack>
-              <Group align="flex-start" noWrap>
+            />            <Stack>
+              <Group align="flex-start" wrap="nowrap">
                 <ThemeIcon 
                   size={50} 
                   radius="md" 
-                  variant="light" 
-                  color="teal"
+                  variant="light"                  color="medicalBlue"
                 >
                   <IconUsers size={26} />
                 </ThemeIcon>
@@ -118,7 +119,7 @@ const RegisterPage = () => {
                 </div>
               </Group>
               
-              <Group align="flex-start" noWrap>
+              <Group align="flex-start" wrap="nowrap">
                 <ThemeIcon 
                   size={50} 
                   radius="md" 
@@ -135,7 +136,7 @@ const RegisterPage = () => {
                 </div>
               </Group>
               
-              <Group align="flex-start" noWrap>
+              <Group align="flex-start" wrap="nowrap">
                 <ThemeIcon 
                   size={50} 
                   radius="md" 
@@ -155,22 +156,24 @@ const RegisterPage = () => {
           </Box>
         </Box>
 
-        {/* Right side - Registration form */}
-        <Box w={{ base: '100%', md: '45%' }} order={{ base: 1, md: 2 }}>
+        {/* Right side - Registration form */}        <Box w={{ base: '100%', md: '45%' }}>
           <Paper 
             withBorder 
-            shadow="md" 
-            p={30} 
-            radius="md" 
-            sx={{ 
-              borderTop: `4px solid ${theme.colors.blue[6]}`,
-              position: 'relative'
+            shadow="xl" 
+            p={35} 
+            radius="xl" 
+            style={{ 
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',              borderTop: `4px solid ${theme.colors.medicalBlue[6]}`,
+              position: 'relative',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)'
             }}
           >
             <ThemeIcon 
               size={60} 
               radius="xl" 
-              color="blue" 
+              color="medicalBlue"
               style={{ 
                 position: 'absolute',
                 top: -30,
@@ -205,7 +208,7 @@ const RegisterPage = () => {
                   required
                   label="Username"
                   placeholder="Choose a username"
-                  icon={<IconUser size={16} />}
+                  leftSection={<IconUser size={16} />}
                   radius="md"
                   size="md"
                   {...form.getInputProps('username')}
@@ -215,17 +218,15 @@ const RegisterPage = () => {
                   required
                   label="Email"
                   placeholder="your@email.com"
-                  icon={<IconMail size={16} />}
+                  leftSection={<IconMail size={16} />}
                   radius="md"
                   size="md"
                   {...form.getInputProps('email')}
-                />
-
-                <PasswordInput
+                />                <PasswordInput
                   required
                   label="Password"
                   placeholder="Choose a password"
-                  icon={<IconLock size={16} />}
+                  leftSection={<IconLock size={16} />}
                   radius="md"
                   size="md"
                   {...form.getInputProps('password')}
@@ -235,7 +236,7 @@ const RegisterPage = () => {
                   required
                   label="Confirm Password"
                   placeholder="Confirm your password"
-                  icon={<IconLock size={16} />}
+                  leftSection={<IconLock size={16} />}
                   radius="md"
                   size="md"
                   {...form.getInputProps('confirmPassword')}

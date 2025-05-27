@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
   Container, 
-  Title, 
   Text, 
   Paper, 
   Group, 
@@ -15,11 +14,12 @@ import {
   Box,
   RingProgress,
   Progress,
-  SimpleGrid
+  SimpleGrid,
+  ThemeIcon,
+  Title
 } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import adminService, { SystemStatistics, ExtendedStatistics } from '../api/adminService';
-import { notifications } from '@mantine/notifications';
 import { 
   IconUsers, 
   IconFileText, 
@@ -34,6 +34,7 @@ import {
   IconFileAnalytics,
   IconUserBolt
 } from '@tabler/icons-react';
+import PageHeader from '../components/PageHeader';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState<SystemStatistics | null>(null);
@@ -94,7 +95,6 @@ const AdminDashboard = () => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
-
   const StatCard = ({ 
     title, 
     value, 
@@ -106,14 +106,38 @@ const AdminDashboard = () => {
     color?: string;
     icon: React.FC<any>;
   }) => (
-    <Paper shadow="xs" p="md" withBorder style={{ borderLeft: `4px solid var(--mantine-color-${color}-6)` }}>
-      <Group gap="xs">
-        <Icon size={28} stroke={1.5} color={`var(--mantine-color-${color}-6)`} />
+    <Paper 
+      shadow="sm" 
+      p="xl" 
+      radius="xl"
+      style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+        borderLeft: `4px solid var(--mantine-color-${color}-6)`,
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+      }}
+      className="hover:transform hover:scale-105"
+    >
+      <Group gap="md" align="center">
+        <ThemeIcon 
+          size={50} 
+          radius="xl" 
+          color={color} 
+          variant="light"
+          style={{
+            background: `rgba(var(--mantine-color-${color}-rgb), 0.1)`,
+            border: `1px solid rgba(var(--mantine-color-${color}-rgb), 0.2)`
+          }}
+        >
+          <Icon size={24} stroke={1.5} />
+        </ThemeIcon>
         <div>
-          <Text c="dimmed" size="sm">
+          <Text c="dimmed" size="sm" fw={500}>
             {title}
           </Text>
-          <Text size="xl" fw={700} mt="sm">
+          <Text size="xl" fw={700} mt={4} c={color}>
             {value}
           </Text>
         </div>
@@ -157,9 +181,8 @@ const AdminDashboard = () => {
       count,
       percentage: Math.round((count / total) * 100)
     }));
-    
-    // Colors for the segments
-    const colors = ['blue', 'cyan', 'teal', 'green', 'lime', 'yellow', 'orange'];
+      // Colors for the segments
+    const colors = ['blue', 'medicalBlue', 'green', 'lime', 'yellow', 'orange', 'indigo'];
     
     return (
       <Paper shadow="xs" p="md" withBorder>
@@ -228,45 +251,62 @@ const AdminDashboard = () => {
       </Paper>
     );
   };
-
   return (
-    <Container size="lg" pos="relative">
+    <Container size="lg" pos="relative" py="xl">
       <LoadingOverlay visible={loading} />
-      <Group position="apart" mb="lg">
-        <Title>Admin Dashboard</Title>
-        <Group>
-          <Button 
-            variant="light" 
-            onClick={handleNavigateToPatientsPage}
-            leftSection={<IconUsers size={18} />}
-          >
-            Manage Patients
-          </Button>
-          <Button 
-            variant="light" 
-            onClick={handleNavigateToDocumentsPage}
-            leftSection={<IconFileText size={18} />}
-          >
-            All Documents
-          </Button>
-        </Group>
-      </Group>
+      
+      <PageHeader
+        title="Admin Dashboard"
+        subtitle="Manage system statistics and user data"
+        action={
+          <Group gap="sm">
+            <Button 
+              variant="light" 
+              color="blue"
+              onClick={handleNavigateToPatientsPage}
+              leftSection={<IconUsers size={18} />}
+              radius="xl"
+            >
+              Manage Patients
+            </Button>            <Button 
+              variant="light" 
+              color="medicalBlue"
+              onClick={handleNavigateToDocumentsPage}
+              leftSection={<IconFileText size={18} />}
+              radius="xl"
+            >
+              All Documents
+            </Button>
+          </Group>
+        }
+      />
       
       {error && (
-        <Alert color="red" title="Error" mb="lg" withCloseButton onClose={() => setError(null)}>
+        <Alert 
+          color="red" 
+          title="Error" 
+          mb="xl" 
+          withCloseButton 
+          onClose={() => setError(null)}
+          radius="md"
+        >
           {error}
         </Alert>
       )}
       
-      <Tabs value={activeTab} onChange={setActiveTab} mb="xl">
-        <Tabs.List>
-          <Tabs.Tab value="overview" leftSection={<IconFileAnalytics size={16} />}>Overview</Tabs.Tab>
-          <Tabs.Tab value="statistics" leftSection={<IconChartBar size={16} />}>Statistics & Charts</Tabs.Tab>
+      <Tabs value={activeTab} onChange={setActiveTab} variant="pills" radius="xl">
+        <Tabs.List mb="xl">
+          <Tabs.Tab value="overview" leftSection={<IconFileAnalytics size={16} />}>
+            Overview
+          </Tabs.Tab>
+          <Tabs.Tab value="statistics" leftSection={<IconChartBar size={16} />}>
+            Statistics & Charts
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="overview" pt="md">
           {stats && (
-            <Stack spacing="lg">
+            <Stack gap="xl">
               <Grid gutter="md">
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <StatCard 
@@ -292,17 +332,16 @@ const AdminDashboard = () => {
                     icon={IconDatabase} 
                   />
                 </Grid.Col>
-                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                  <StatCard 
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>                  <StatCard 
                     title="Documents This Month" 
                     value={stats.documentsUploadedThisMonth} 
-                    color="teal" 
+                    color="medicalBlue" 
                     icon={IconCalendar} 
                   />
                 </Grid.Col>
               </Grid>
               
-              <Grid gutter="md" mt="md">
+              <Grid gutter="md">
                 <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
                   <StatCard 
                     title="Active Users" 
@@ -360,7 +399,7 @@ const AdminDashboard = () => {
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <Paper shadow="xs" p="md" withBorder>
                       <Text size="sm" fw={500} mb="md">User Status Distribution</Text>
-                      <Group mt={30} mb={15} grow position="apart">
+                      <Group mt={30} mb={15} grow justify="space-between">
                         <Box>
                           <RingProgress 
                             size={80}

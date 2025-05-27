@@ -9,7 +9,6 @@ import {
   Button, 
   Text, 
   Stack, 
-  Anchor, 
   Alert,
   Group,
   Divider,
@@ -89,9 +88,8 @@ const LoginPage = () => {
       description: 'Industry-leading security standards to keep your data safe.'
     }
   ];
-
   return (
-    <Container size="xl" py={40}>
+    <Container size="xl" py={40} style={{ minHeight: '100vh' }}>
       <Flex
         direction={{ base: 'column', md: 'row' }}
         gap={{ base: 30, md: 50 }}
@@ -102,18 +100,20 @@ const LoginPage = () => {
         <Box w={{ base: '100%', md: '45%' }}>
           <Paper 
             withBorder 
-            shadow="md" 
-            p={30} 
-            radius="md" 
-            sx={{ 
-              borderTop: `4px solid ${theme.colors.blue[6]}`,
-              position: 'relative'
+            shadow="xl" 
+            p={35} 
+            radius="xl" 
+            style={{ 
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',              borderTop: `4px solid ${theme.colors.medicalBlue[6]}`,
+              position: 'relative',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)'
             }}
-          >
-            <ThemeIcon 
+          >            <ThemeIcon 
               size={60} 
               radius="xl" 
-              color="blue" 
+              color="medicalBlue"
               style={{ 
                 position: 'absolute',
                 top: -30,
@@ -141,13 +141,11 @@ const LoginPage = () => {
                   >
                     {error}
                   </Alert>
-                )}
-
-                <TextInput
+                )}                <TextInput
                   required
                   label="Username"
                   placeholder="Your username"
-                  icon={<IconUser size={16} />}
+                  leftSection={<IconUser size={16} />}
                   radius="md"
                   size="md"
                   {...form.getInputProps('username')}
@@ -157,7 +155,7 @@ const LoginPage = () => {
                   required
                   label="Password"
                   placeholder="Your password"
-                  icon={<IconLock size={16} />}
+                  leftSection={<IconLock size={16} />}
                   radius="md"
                   size="md"
                   {...form.getInputProps('password')}
@@ -193,9 +191,7 @@ const LoginPage = () => {
         </Box>
 
         {/* Right side - Features and image */}
-        <Box w={{ base: '100%', md: '50%' }} ta="center">
-          <Box>
-            <Title order={2} mb={rem(30)} color="blue.7">
+        <Box w={{ base: '100%', md: '50%' }} ta="center">          <Box>            <Title order={2} mb={rem(30)} c="medicalBlue.7">
               Healthics
             </Title>
             <Text mb={rem(30)} size="lg">
@@ -209,9 +205,8 @@ const LoginPage = () => {
               style={{ maxWidth: 400, margin: '0 auto' }}
             />
 
-            <Stack>
-              {features.map((feature, i) => (
-                <Group key={i} align="flex-start" noWrap>
+            <Stack>              {features.map((feature, i) => (
+                <Group key={i} align="flex-start" wrap="nowrap">
                   <ThemeIcon 
                     size={50} 
                     radius="md" 

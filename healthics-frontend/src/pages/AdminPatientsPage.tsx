@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { 
   Container, 
-  Title, 
   Paper, 
   Table, 
   Badge, 
-  Button, 
   Group, 
   Text, 
   TextInput, 
@@ -13,15 +11,16 @@ import {
   Pagination, 
   LoadingOverlay, 
   Alert,
-  Tabs,
   ActionIcon,
   Tooltip,
-  Checkbox
+  Checkbox,
+  Stack
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import adminService from '../api/adminService';
-import { IconSearch, IconEye, IconUserOff, IconUserCheck, IconShield, IconShieldOff, IconFileText } from '@tabler/icons-react';
+import { IconSearch, IconUserOff, IconUserCheck, IconShield, IconShieldOff, IconFileText, IconDashboard } from '@tabler/icons-react';
+import PageHeader from '../components/PageHeader';
 
 interface PatientData {
   id: number;
@@ -193,68 +192,121 @@ const AdminPatientsPage = () => {
   );
   
   const totalPages = Math.ceil(filteredPatients.length / ITEMS_PER_PAGE);
-
   return (
-    <Container size="lg" pos="relative">
+    <Container size="lg" pos="relative" py="xl">
       <LoadingOverlay visible={loading} />
-      <Title mb="md">Patient Management</Title>
       
+      <PageHeader
+        title="Patient Management"
+        subtitle="Manage patient accounts, profiles, and status"
+        action={
+          <Group gap="sm">
+            <ActionIcon 
+              variant="light" 
+              color="blue"
+              size="lg"
+              radius="xl"
+              onClick={() => navigate('/admin/dashboard')}
+            >
+              <IconDashboard size={20} />
+            </ActionIcon>
+          </Group>
+        }
+      />
+
       {error && (
-        <Alert color="red" title="Error" mb="md" withCloseButton onClose={() => setError(null)}>
+        <Alert 
+          color="red" 
+          title="Error" 
+          mb="xl" 
+          withCloseButton 
+          onClose={() => setError(null)}
+          radius="md"
+        >
           {error}
         </Alert>
       )}
       
-      <Paper shadow="xs" p="md" withBorder mb="lg">
-        <Group justify="space-between" mb="md">
-          <Group>
-            <TextInput
-              placeholder="Search patients..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.currentTarget.value)}
-              leftSection={<IconSearch size={16} />}
-              width={250}
-            />
+      <Paper 
+        shadow="sm" 
+        p="xl" 
+        radius="xl" 
+        mb="lg"
+        style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}
+      >
+        <Stack gap="lg">
+          <Group justify="space-between" align="flex-end">
+            <Group gap="md">
+              <TextInput
+                placeholder="Search patients..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.currentTarget.value)}
+                leftSection={<IconSearch size={16} />}
+                w={250}
+                radius="md"
+                size="sm"
+              />
+              
+              <Select
+                placeholder="Filter by status"
+                data={[
+                  { value: 'all', label: 'All Statuses' },
+                  { value: 'active', label: 'Active Only' },
+                  { value: 'inactive', label: 'Inactive Only' },
+                  { value: 'banned', label: 'Banned Only' }
+                ]}
+                value={statusFilter}
+                onChange={setStatusFilter}
+                w={150}
+                radius="md"
+                size="sm"
+              />
+              
+              <Select
+                placeholder="Filter by profile"
+                data={[
+                  { value: 'all', label: 'All Profiles' },
+                  { value: 'complete', label: 'Complete Profiles' },
+                  { value: 'incomplete', label: 'Incomplete Profiles' }
+                ]}
+                value={profileFilter}
+                onChange={setProfileFilter}
+                w={170}
+                radius="md"
+                size="sm"
+              />
+            </Group>
             
-            <Select
-              placeholder="Filter by status"
-              data={[
-                { value: 'all', label: 'All Statuses' },
-                { value: 'active', label: 'Active Only' },
-                { value: 'inactive', label: 'Inactive Only' },
-                { value: 'banned', label: 'Banned Only' }
-              ]}
-              value={statusFilter}
-              onChange={setStatusFilter}
-              width={150}
+            <Checkbox
+              label="Include patients without profiles"
+              checked={includeIncomplete}
+              onChange={(e) => setIncludeIncomplete(e.currentTarget.checked)}
+              size="sm"
             />
-            
-            <Select
-              placeholder="Filter by profile"
-              data={[
-                { value: 'all', label: 'All Profiles' },
-                { value: 'complete', label: 'Complete Profiles' },
-                { value: 'incomplete', label: 'Incomplete Profiles' }
-              ]}
-              value={profileFilter}
-              onChange={setProfileFilter}
-              width={170}
-            />
-          </Group>
-          
-          <Checkbox
-            label="Include patients without profiles"
-            checked={includeIncomplete}
-            onChange={(e) => setIncludeIncomplete(e.currentTarget.checked)}
-          />
-        </Group>
-        
-        <Text size="sm" mb="xs">
+          </Group>        
+        <Text size="sm" c="dimmed" mb="md">
           Showing {Math.min(filteredPatients.length, ITEMS_PER_PAGE)} of {filteredPatients.length} patients
         </Text>
         
-        <Table striped highlightOnHover>
-          <Table.Thead>
+        <Table 
+          striped 
+          highlightOnHover 
+          withTableBorder 
+          withColumnBorders
+          style={{
+            borderRadius: 'var(--mantine-radius-md)',
+            overflow: 'hidden'
+          }}
+        >
+          <Table.Thead 
+            style={{
+              background: 'rgba(20, 184, 166, 0.1)'
+            }}          >
             <Table.Tr>
               <Table.Th>ID</Table.Th>
               <Table.Th>Username</Table.Th>
@@ -279,35 +331,49 @@ const AdminPatientsPage = () => {
                   <Table.Td>
                     {patient.hasProfile ? `${patient.firstName} ${patient.lastName}` : 'Not provided'}
                   </Table.Td>
-                  <Table.Td>{patient.email}</Table.Td>
-                  <Table.Td>
-                    <Badge color={patient.hasProfile ? 'green' : 'orange'}>
+                  <Table.Td>{patient.email}</Table.Td>                  <Table.Td>
+                    <Badge                      color={patient.hasProfile ? 'medicalBlue' : 'orange'} 
+                      variant="light"
+                      radius="md"
+                      size="sm"
+                    >
                       {patient.hasProfile ? 'Complete' : 'Incomplete'}
                     </Badge>
                   </Table.Td>
                   <Table.Td>
                     {patient.banned ? (
-                      <Badge color="red">Banned</Badge>
+                      <Badge color="red" variant="light" radius="md" size="sm">Banned</Badge>
                     ) : (
-                      <Badge color={patient.active ? 'green' : 'yellow'}>
+                      <Badge 
+                        color={patient.active ? 'medicalBlue' : 'yellow'}
+                        variant="light"
+                        radius="md"
+                        size="sm"
+                      >
                         {patient.active ? 'Active' : 'Inactive'}
                       </Badge>
                     )}
                   </Table.Td>
-                  <Table.Td align="center">
-                    <Badge color={patient.documentCount > 0 ? 'blue' : 'gray'}>
+                  <Table.Td ta="center">
+                    <Badge 
+                      color={patient.documentCount > 0 ? 'blue' : 'gray'} 
+                      variant="light"
+                      radius="md"
+                      size="sm"
+                    >
                       {patient.documentCount}
                     </Badge>
                   </Table.Td>
-                  <Table.Td>
-                    <Group gap="xs">
+                  <Table.Td>                    <Group gap="xs">
                       <Tooltip label="View Documents">
                         <ActionIcon 
                           variant="light" 
                           color="blue"
                           onClick={() => handleViewPatientDocuments(patient.id)}
+                          radius="md"
+                          size="sm"
                         >
-                          <IconFileText size={18} />
+                          <IconFileText size={16} />
                         </ActionIcon>
                       </Tooltip>
                       
@@ -319,18 +385,21 @@ const AdminPatientsPage = () => {
                                 variant="light" 
                                 color="yellow"
                                 onClick={() => handleStatusChange(patient.id, false)}
+                                radius="md"
+                                size="sm"
                               >
-                                <IconUserOff size={18} />
+                                <IconUserOff size={16} />
                               </ActionIcon>
                             </Tooltip>
-                          ) : (
-                            <Tooltip label="Activate">
+                          ) : (                            <Tooltip label="Activate">
                               <ActionIcon 
                                 variant="light" 
-                                color="green"
+                                color="medicalBlue"
                                 onClick={() => handleStatusChange(patient.id, true)}
+                                radius="md"
+                                size="sm"
                               >
-                                <IconUserCheck size={18} />
+                                <IconUserCheck size={16} />
                               </ActionIcon>
                             </Tooltip>
                           )}
@@ -341,10 +410,12 @@ const AdminPatientsPage = () => {
                         <Tooltip label="Unban">
                           <ActionIcon 
                             variant="light" 
-                            color="green"
+                            color="medicalBlue"
                             onClick={() => handleBanStatusChange(patient.id, false)}
+                            radius="md"
+                            size="sm"
                           >
-                            <IconShieldOff size={18} />
+                            <IconShieldOff size={16} />
                           </ActionIcon>
                         </Tooltip>
                       ) : (
@@ -353,8 +424,10 @@ const AdminPatientsPage = () => {
                             variant="light" 
                             color="red"
                             onClick={() => handleBanStatusChange(patient.id, true)}
+                            radius="md"
+                            size="sm"
                           >
-                            <IconShield size={18} />
+                            <IconShield size={16} />
                           </ActionIcon>
                         </Tooltip>
                       )}
@@ -364,17 +437,19 @@ const AdminPatientsPage = () => {
               ))
             )}
           </Table.Tbody>
-        </Table>
-        
-        {totalPages > 1 && (
-          <Group justify="center" mt="md">
+        </Table>          {totalPages > 1 && (
+          <Group justify="center" mt="lg">
             <Pagination 
               value={activePage} 
               onChange={setActivePage} 
-              total={totalPages} 
+              total={totalPages}
+              color="medicalBlue"
+              radius="md"
+              size="sm"
             />
           </Group>
         )}
+        </Stack>
       </Paper>
     </Container>
   );
