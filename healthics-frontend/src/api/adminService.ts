@@ -1,5 +1,14 @@
 import apiClient from './apiClient';
 import { Document } from './documentService';
+import {
+  mockAnalyticsResults,
+  mockPatientAnalysis,
+  mockMedicalConditions,
+  mockHealthcareTrends,
+  mockAnalyticsDashboard,
+  mockHealthAnalytics,
+  isMockMode
+} from '../utils/mockAnalyticsData';
 
 // Match the actual API response structure from /api/admin/statistics
 export interface SystemStatistics {
@@ -57,6 +66,46 @@ export interface PatientResponse {
 export interface ExtendedDocument extends Document {
   userId: number;
   username: string;
+}
+
+export interface AnalyticsResult {
+  status: string;
+  timestamp: string;
+  [key: string]: any;
+}
+
+export interface PatientAnalysisResult extends AnalyticsResult {
+  patientId: number;
+  documentCount: number;
+  medicalTermsFrequency: Record<string, number>;
+  sentimentAnalysis: {
+    overall: string;
+    score: number;
+    positiveTermsCount: number;
+    negativeTermsCount: number;
+  };
+  categoryDistribution: Record<string, number>;
+  analysisType: string;
+}
+
+export interface MedicalConditionsResult extends AnalyticsResult {
+  totalDocuments: number;
+  conditionCounts: Record<string, number>;
+  totalConditionMentions: number;
+  averageMentionsPerCondition: number;
+  mostCommonCondition: string;
+}
+
+export interface HealthcareTrendsResult extends AnalyticsResult {
+  totalDocuments: number;
+  categoryDistribution: Record<string, number>;
+  uploadPatterns: Record<string, number>;
+  analysisType: string;
+}
+
+export interface AnalyticsDashboard extends AnalyticsResult {
+  medicalConditions: MedicalConditionsResult;
+  healthcareTrends: HealthcareTrendsResult;
 }
 
 const adminService = {
@@ -209,6 +258,89 @@ const adminService = {
       console.error(`Error downloading document ${documentId}:`, error);
       throw error;
     }
+  },
+  // Big Data Analytics Methods
+  async analyzePatientDocuments(patientId: number): Promise<PatientAnalysisResult> {
+    if (isMockMode()) {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return mockPatientAnalysis;
+    }
+    const response = await apiClient.get(`/api/analysis/patient/${patientId}`);
+    return response.data;
+  },
+
+  async extractMedicalConditions(): Promise<MedicalConditionsResult> {
+    if (isMockMode()) {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      return mockMedicalConditions;
+    }
+    const response = await apiClient.get('/api/analysis/conditions');
+    return response.data;
+  },
+
+  async analyzeHealthcareTrends(): Promise<HealthcareTrendsResult> {
+    if (isMockMode()) {
+      await new Promise(resolve => setTimeout(resolve, 600));
+      return mockHealthcareTrends;
+    }
+    const response = await apiClient.get('/api/analysis/trends');
+    return response.data;
+  },
+
+  async getAnalyticsDashboard(): Promise<AnalyticsDashboard> {
+    if (isMockMode()) {
+      await new Promise(resolve => setTimeout(resolve, 400));
+      return mockAnalyticsDashboard;
+    }
+    const response = await apiClient.get('/api/analysis/dashboard');
+    return response.data;
+  },
+
+  // Health Analytics Service Methods
+  async getHealthAnalyticsDashboard(): Promise<any> {
+    if (isMockMode()) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return mockHealthAnalytics.sampleAnalytics;
+    }
+    const response = await apiClient.get('/api/health-analytics/dashboard');
+    return response.data;
+  },
+
+  async analyzeSampleHealthcareData(): Promise<any> {
+    if (isMockMode()) {
+      await new Promise(resolve => setTimeout(resolve, 700));
+      return mockHealthAnalytics.sampleAnalytics;
+    }
+    const response = await apiClient.get('/api/health-analytics/sample-analysis');
+    return response.data;
+  },
+
+  async performMLAnalysis(): Promise<any> {
+    if (isMockMode()) {
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      return mockHealthAnalytics.mlAnalysis;
+    }
+    const response = await apiClient.get('/api/health-analytics/ml-analysis');
+    return response.data;
+  },
+
+  async generatePredictiveAnalytics(): Promise<any> {
+    if (isMockMode()) {
+      await new Promise(resolve => setTimeout(resolve, 900));
+      return mockHealthAnalytics.predictiveAnalytics;
+    }
+    const response = await apiClient.get('/api/health-analytics/predictive-analytics');
+    return response.data;
+  },
+
+  async getAnalyticsSystemInfo(): Promise<any> {
+    if (isMockMode()) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      return mockHealthAnalytics.systemInfo;
+    }
+    const response = await apiClient.get('/api/health-analytics/system-info');
+    return response.data;
   },
 
   // Mock data for testing

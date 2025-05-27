@@ -9,7 +9,8 @@ import {
   IconDashboard, 
   IconUsers, 
   IconFileAnalytics,
-  IconStethoscope
+  IconStethoscope,
+  IconChartBar
 } from '@tabler/icons-react';
 
 const NavbarContent = () => {
@@ -84,13 +85,20 @@ const NavbarContent = () => {
             leftSection={<IconUsers size={20} />}
             active={location.pathname === '/admin/patients'}
           />
-          
-          <NavLink
+            <NavLink
             component={Link}
             to="/admin/documents"
             label="All Documents"
             leftSection={<IconFileAnalytics size={20} />}
             active={location.pathname === '/admin/documents'}
+          />
+          
+          <NavLink
+            component={Link}
+            to="/admin/analytics"
+            label="Big Data Analytics"
+            leftSection={<IconChartBar size={20} />}
+            active={location.pathname === '/admin/analytics'}
           />
           
           

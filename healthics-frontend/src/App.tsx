@@ -28,6 +28,7 @@ import AdminDocumentDetailPage from './pages/AdminDocumentDetailPage';
 import AdminPatientsPage from './pages/AdminPatientsPage';
 import AdminAllDocumentsPage from './pages/AdminAllDocumentsPage';
 import MinimalHealthAdvisorPage from './pages/MinimalHealthAdvisorPage';
+import SimpleBigDataAnalyticsPage from './pages/SimpleBigDataAnalyticsPage';
 
 const theme = createTheme({
   primaryColor: 'medicalBlue',
@@ -141,12 +142,12 @@ function App() {
                     <Route path="/documents" element={<DocumentsPage />} />
                     <Route path="/documents/:id" element={<DocumentDetailPage />} />
                   </Route>
-                  
-                  {/* Admin Routes */}
+                    {/* Admin Routes */}
                   <Route element={<RequireAdmin />}>
                     <Route path="/admin/dashboard" element={<AdminDashboard />} />
                     <Route path="/admin/patients" element={<AdminPatientsPage />} />
                     <Route path="/admin/documents" element={<AdminAllDocumentsPage />} />
+                    <Route path="/admin/analytics" element={<SimpleBigDataAnalyticsPage />} />
                     <Route path="/admin/patients/:patientId/documents" element={<AdminPatientDocumentsPage />} />
                     <Route path="/admin/documents/:documentId" element={<AdminDocumentDetailPage />} />
                   </Route>
