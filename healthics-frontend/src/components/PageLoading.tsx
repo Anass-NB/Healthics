@@ -16,7 +16,7 @@ const PageLoading = ({ type = 'list' }: PageLoadingProps) => {
         
         <Paper p="md" withBorder mb="lg">
           <Skeleton height={40} width="40%" mb="xl" />
-          <Group position="apart" mb="lg">
+          <Group justify="space-between" mb="lg">
             <Skeleton height={36} width={120} radius="md" />
             <Group>
               <Skeleton height={36} width={100} radius="md" />
@@ -70,7 +70,7 @@ const PageLoading = ({ type = 'list' }: PageLoadingProps) => {
       <Skeleton height={50} width="50%" radius="md" mb="xl" />
       
       <Paper p="md" withBorder mb="lg">
-        <Group position="apart" mb="xl">
+        <Group justify="space-between" mb="xl">
           <Group>
             <Skeleton height={36} width={150} radius="md" />
             <Skeleton height={36} width={150} radius="md" />

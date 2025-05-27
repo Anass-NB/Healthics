@@ -139,7 +139,7 @@ const DocumentEditPage = () => {
       )}
 
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack spacing="md">
+        <Stack gap="md">
           <TextInput
             required
             label="Document Title"

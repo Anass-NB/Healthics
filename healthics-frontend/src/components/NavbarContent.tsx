@@ -8,8 +8,7 @@ import {
   IconUpload, 
   IconDashboard, 
   IconUsers, 
-  IconFileAnalytics, 
-  IconChartBar 
+  IconFileAnalytics
 } from '@tabler/icons-react';
 
 const NavbarContent = () => {

@@ -19,18 +19,30 @@ const Layout = () => {
   const getInitials = (username: string) => {
     return username ? username.charAt(0).toUpperCase() : '?';
   };
-
   return (
     <AppShell
-      header={{ height: 60 }}
-      navbar={{ width: 250, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+      header={{ height: 70 }}
+      navbar={{ width: 280, breakpoint: 'sm', collapsed: { mobile: !opened } }}
       padding="md"
     >
-      <AppShell.Header>
+      <AppShell.Header style={{ 
+        background: 'rgba(255, 255, 255, 0.95)', 
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+      }}>
         <Group h="100%" px="md" justify="space-between">
           <Group>
-            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Text size="lg" fw={700} c="blue.6">Healthics</Text>
+            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />            <Text size="xl" fw={800} 
+              style={{
+                background: 'linear-gradient(45deg, #1976d2 0%, #42a5f5 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
+              Healthics
+            </Text>
           </Group>
           
           {user && (
@@ -85,13 +97,18 @@ const Layout = () => {
             </Menu>
           )}
         </Group>
-      </AppShell.Header>
-
-      <AppShell.Navbar p="md">
+      </AppShell.Header>      <AppShell.Navbar 
+        p="md" 
+        style={{ 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(10px)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.2)'
+        }}
+      >
         <NavbarContent />
       </AppShell.Navbar>
 
-      <AppShell.Main>
+      <AppShell.Main style={{ background: 'transparent' }}>
         <Box ml={10} mr={10} mt={10}>
           <BreadcrumbNav />
           <Outlet />
