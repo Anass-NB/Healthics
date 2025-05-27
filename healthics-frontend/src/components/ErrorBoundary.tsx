@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 import { Container, Title, Text, Button, Group, Stack, ThemeIcon } from '@mantine/core';
 import { IconAlertTriangle, IconRefresh, IconHome } from '@tabler/icons-react';
 
@@ -52,18 +52,18 @@ class ErrorBoundary extends Component<Props, State> {
 
       return (
         <Container size="md" p="xl">
-          <Stack align="center" spacing="xl" py="xl">
+          <Stack align="center" gap="xl" py="xl">
             <ThemeIcon size={80} radius={100} color="red.1">
               <IconAlertTriangle size={44} color="var(--mantine-color-red-6)" />
             </ThemeIcon>
             
-            <Title order={1} align="center">Something went wrong</Title>
+            <Title order={1} ta="center">Something went wrong</Title>
             
-            <Text align="center" size="lg" color="dimmed" maw={500}>
+            <Text ta="center" size="lg" c="dimmed" maw={500}>
               We're sorry, but something unexpected happened. The error has been logged, and we're working on it.
             </Text>
             
-            {process.env.NODE_ENV !== 'production' && this.state.error && (
+            {this.state.error && (
               <Container size="sm">
                 <Text component="pre" size="xs" style={{ 
                   padding: '15px', 
@@ -79,11 +79,11 @@ class ErrorBoundary extends Component<Props, State> {
             )}
             
             <Group>
-              <Button leftIcon={<IconRefresh size={16} />} onClick={this.handleRefresh}>
+              <Button leftSection={<IconRefresh size={16} />} onClick={this.handleRefresh}>
                 Refresh Page
               </Button>
               
-              <Button variant="outline" leftIcon={<IconHome size={16} />} onClick={this.handleGoHome}>
+              <Button variant="outline" leftSection={<IconHome size={16} />} onClick={this.handleGoHome}>
                 Go to Home
               </Button>
             </Group>

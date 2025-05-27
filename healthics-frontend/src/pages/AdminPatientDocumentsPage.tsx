@@ -2,25 +2,22 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Container, 
-  Button, 
   Group, 
   Table, 
   Badge, 
   Text, 
   Alert, 
   Paper, 
-  LoadingOverlay,
   Card,
   Stack,
   ActionIcon,
   Menu,
   Grid,
   Divider,
-  Title,
   ThemeIcon,
   TextInput
 } from '@mantine/core';
-import { IconDownload, IconEye, IconDotsVertical, IconAlertCircle, IconSearch, IconPlus, IconRefresh, IconFileOff, IconArrowLeft } from '@tabler/icons-react';
+import { IconDownload, IconEye, IconDotsVertical, IconAlertCircle, IconSearch, IconRefresh, IconFileOff, IconDashboard } from '@tabler/icons-react';
 import PageHeader from '../components/PageHeader';
 import EmptyState from '../components/EmptyState';
 import PageLoading from '../components/PageLoading';
@@ -28,7 +25,6 @@ import { notifications } from '@mantine/notifications';
 
 // Import updated services that handle authentication properly
 import adminService from '../api/adminService';
-import documentService from '../api/documentService';
 
 // Define Document interface to match API response exactly
 interface Document {
@@ -283,7 +279,6 @@ const AdminPatientDocumentsPage = () => {
     patientProfileData: patient,
     noProfile
   });
-
   return (
     <Container size="lg" pos="relative">
       <PageHeader 
@@ -293,6 +288,17 @@ const AdminPatientDocumentsPage = () => {
             ? `${patientUser.firstName} ${patientUser.lastName} (${patientUser.username})` 
             : patientUser.username) + ` - ${patientUser.email}` 
           : undefined
+        }        action={
+          <ActionIcon 
+            variant="light" 
+            color="medicalBlue" 
+            size="lg" 
+            radius="md"
+            onClick={() => navigate('/admin/dashboard')}
+            title="Back to Dashboard"
+          >
+            <IconDashboard size={18} />
+          </ActionIcon>
         }
       />
 
@@ -309,11 +315,10 @@ const AdminPatientDocumentsPage = () => {
             label: "Retry",
             onClick: () => window.location.reload(),
             icon: <IconRefresh size={16} />
-          }}
-          secondaryAction={{
-            label: "Go Back",
-            onClick: () => navigate(-1),
-            icon: <IconArrowLeft size={16} />
+          }}          secondaryAction={{
+            label: "Dashboard",
+            onClick: () => navigate('/admin/dashboard'),
+            icon: <IconDashboard size={16} />
           }}
         />
       )}
@@ -322,61 +327,82 @@ const AdminPatientDocumentsPage = () => {
         <Alert color="yellow" mb="lg" title="Profile Missing" icon={<IconAlertCircle size="1rem" />}>
           This patient does not have a complete profile, but their documents are still accessible.
         </Alert>
-      )}
-
-      {documents.length > 0 && (
-        <Paper shadow="xs" p="md" withBorder mb="md">
-          <Group justify="apart">
+      )}      {documents.length > 0 && (
+        <Paper 
+          style={{ 
+            padding: '16px',
+            marginBottom: '16px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '8px',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <Group justify="space-between">
             <TextInput
               placeholder="Search documents..."
               leftSection={<IconSearch size={16} />}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.currentTarget.value)}
               style={{ width: '100%', maxWidth: 400 }}
+              size="sm"
+              radius="md"
             />
-            <Text size="sm">
+            <Text size="sm" c="dimmed">
               Showing {filteredDocuments.length} of {documents.length} documents
             </Text>
           </Group>
         </Paper>
-      )}
-
-      {patient && (
-        <Card shadow="sm" padding="lg" radius="md" withBorder mb="lg">
+      )}      {patient && (
+        <Card 
+          withBorder 
+          shadow="sm" 
+          padding="lg" 
+          radius="md" 
+          mb="lg"
+          style={{ 
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+          }}
+        >
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}>
-              <Stack>
-                <Text fw={500}>Personal Information</Text>
+              <Stack gap="sm">
+                <Text fw={500} size="lg" c="dark">Personal Information</Text>
                 <Divider />
-                <Group>
-                  <Text fw={500} size="sm">Name:</Text>
-                  <Text>{patient.firstName} {patient.lastName}</Text>
+                <Group gap="xs">
+                  <Text fw={500} size="sm" w={120}>Name:</Text>
+                  <Text size="sm">{patient.firstName} {patient.lastName}</Text>
                 </Group>
-                <Group>
-                  <Text fw={500} size="sm">Date of Birth:</Text>
-                  <Text>{formatDate(patient.dateOfBirth)}</Text>
+                <Group gap="xs">
+                  <Text fw={500} size="sm" w={120}>Date of Birth:</Text>
+                  <Text size="sm">{formatDate(patient.dateOfBirth)}</Text>
                 </Group>
-                <Group>
-                  <Text fw={500} size="sm">Phone:</Text>
-                  <Text>{patient.phoneNumber}</Text>
+                <Group gap="xs">
+                  <Text fw={500} size="sm" w={120}>Phone:</Text>
+                  <Text size="sm">{patient.phoneNumber}</Text>
                 </Group>
               </Stack>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}>
-              <Stack>
-                <Text fw={500}>Medical Information</Text>
+              <Stack gap="sm">
+                <Text fw={500} size="lg" c="dark">Medical Information</Text>
                 <Divider />
-                <Group align="flex-start">
-                  <Text fw={500} size="sm">Allergies:</Text>
-                  <Text>{patient.allergies || 'None'}</Text>
+                <Group align="flex-start" gap="xs">
+                  <Text fw={500} size="sm" w={120}>Allergies:</Text>
+                  <Text size="sm">{patient.allergies || 'None'}</Text>
                 </Group>
-                <Group align="flex-start">
-                  <Text fw={500} size="sm">Medications:</Text>
-                  <Text>{patient.medications || 'None'}</Text>
-                </Group>
-                <Badge 
-                  size="lg"
-                  color={patient.user.active ? 'green' : 'red'}
+                <Group align="flex-start" gap="xs">
+                  <Text fw={500} size="sm" w={120}>Medications:</Text>
+                  <Text size="sm">{patient.medications || 'None'}</Text>
+                </Group>                <Badge 
+                  size="md"
+                  color={patient.user.active ? 'medicalBlue' : 'red'}
+                  variant="light"
+                  radius="md"
                 >
                   {patient.user.active ? 'Active' : 'Inactive'}
                 </Badge>
@@ -384,32 +410,47 @@ const AdminPatientDocumentsPage = () => {
             </Grid.Col>
           </Grid>
         </Card>
-      )}
-
-      {!patient && patientUser && (
-        <Card shadow="sm" padding="lg" radius="md" withBorder mb="lg">
-          <Stack>
-            <Text fw={500}>User Information</Text>
+      )}      {!patient && patientUser && (
+        <Card 
+          withBorder 
+          shadow="sm" 
+          padding="lg" 
+          radius="md" 
+          mb="lg"
+          style={{ 
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <Stack gap="sm">
+            <Text fw={500} size="lg" c="dark">User Information</Text>
             <Divider />
-            <Group>
-              <Text fw={500} size="sm">Username:</Text>
-              <Text>{patientUser.username}</Text>
+            <Group gap="xs">
+              <Text fw={500} size="sm" w={120}>Username:</Text>
+              <Text size="sm">{patientUser.username}</Text>
             </Group>
-            <Group>
-              <Text fw={500} size="sm">Email:</Text>
-              <Text>{patientUser.email}</Text>
+            <Group gap="xs">
+              <Text fw={500} size="sm" w={120}>Email:</Text>
+              <Text size="sm">{patientUser.email}</Text>
             </Group>
-            <Group>
-              <Text fw={500} size="sm">Status:</Text>
-              <Badge 
-                size="lg"
-                color={patientUser.active ? 'green' : 'red'}
-              >
-                {patientUser.active ? 'Active' : 'Inactive'}
-              </Badge>
-              {patientUser.banned && (
-                <Badge size="lg" color="red">Banned</Badge>
-              )}
+            <Group gap="xs">
+              <Text fw={500} size="sm" w={120}>Status:</Text>
+              <Group gap="xs">                <Badge 
+                  size="md"
+                  color={patientUser.active ? 'medicalBlue' : 'red'}
+                  variant="light"
+                  radius="md"
+                >
+                  {patientUser.active ? 'Active' : 'Inactive'}
+                </Badge>
+                {patientUser.banned && (
+                  <Badge size="md" color="red" variant="light" radius="md">
+                    Banned
+                  </Badge>
+                )}
+              </Group>
             </Group>
           </Stack>
         </Card>
@@ -444,32 +485,68 @@ const AdminPatientDocumentsPage = () => {
             onClick: () => setSearchQuery(''),
             icon: <IconRefresh size={16} />
           }}
-        />
-      ) : (
-        <Paper shadow="sm" p="md" withBorder>
-          <Table striped highlightOnHover>
-            <Table.Thead>
+        />      ) : (
+        <Paper 
+          style={{ 
+            padding: '16px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '8px',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <Table 
+            striped 
+            highlightOnHover
+            withRowBorders
+            style={{
+              '--table-border-color': 'rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <Table.Thead 
+              style={{ 
+                backgroundColor: 'rgba(0, 150, 136, 0.05)',
+                borderBottom: '2px solid rgba(0, 150, 136, 0.2)'
+              }}
+            >
               <Table.Tr>
-                <Table.Th>Title</Table.Th>
-                <Table.Th>Category</Table.Th>
-                <Table.Th>Doctor</Table.Th>
-                <Table.Th>Hospital</Table.Th>
-                <Table.Th>Date</Table.Th>
-                <Table.Th>Size</Table.Th>
-                <Table.Th>Actions</Table.Th>
+                <Table.Th style={{ fontWeight: 600, color: 'var(--mantine-color-dark-6)' }}>Title</Table.Th>
+                <Table.Th style={{ fontWeight: 600, color: 'var(--mantine-color-dark-6)' }}>Category</Table.Th>
+                <Table.Th style={{ fontWeight: 600, color: 'var(--mantine-color-dark-6)' }}>Doctor</Table.Th>
+                <Table.Th style={{ fontWeight: 600, color: 'var(--mantine-color-dark-6)' }}>Hospital</Table.Th>
+                <Table.Th style={{ fontWeight: 600, color: 'var(--mantine-color-dark-6)' }}>Date</Table.Th>
+                <Table.Th style={{ fontWeight: 600, color: 'var(--mantine-color-dark-6)' }}>Size</Table.Th>
+                <Table.Th style={{ fontWeight: 600, color: 'var(--mantine-color-dark-6)' }}>Actions</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {filteredDocuments.map((doc) => (
                 <Table.Tr key={doc.id}>
-                  <Table.Td>{doc.title}</Table.Td>
                   <Table.Td>
-                    <Badge>{doc.categoryName}</Badge>
+                    <Text fw={500} size="sm">{doc.title}</Text>
                   </Table.Td>
-                  <Table.Td>{doc.doctorName}</Table.Td>
-                  <Table.Td>{doc.hospitalName}</Table.Td>
-                  <Table.Td>{formatDate(doc.documentDate)}</Table.Td>
-                  <Table.Td>{formatFileSize(doc.fileSize)}</Table.Td>
+                  <Table.Td>                    <Badge 
+                      color="medicalBlue" 
+                      variant="light"
+                      radius="md"
+                      size="sm"
+                    >
+                      {doc.categoryName || 'Uncategorized'}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{doc.doctorName}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{doc.hospitalName}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{formatDate(doc.documentDate)}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm" c="dimmed">{formatFileSize(doc.fileSize)}</Text>
+                  </Table.Td>
                   <Table.Td>
                     <Group gap="xs">
                       <ActionIcon 
@@ -477,29 +554,38 @@ const AdminPatientDocumentsPage = () => {
                         color="blue" 
                         onClick={() => handleViewDocument(doc.id)}
                         title="View document"
+                        size="lg"
+                        radius="md"
                       >
-                        <IconEye size="1.125rem" />
-                      </ActionIcon>
-                      <ActionIcon 
+                        <IconEye size={16} />
+                      </ActionIcon>                      <ActionIcon 
                         variant="light" 
-                        color="green" 
+                        color="medicalBlue" 
                         onClick={() => handleDownloadDocument(doc.id)}
                         title="Download document"
                         loading={downloadingId === doc.id}
+                        size="lg"
+                        radius="md"
                       >
-                        <IconDownload size="1.125rem" />
+                        <IconDownload size={16} />
                       </ActionIcon>
                       <Menu position="bottom-end" shadow="md">
                         <Menu.Target>
-                          <ActionIcon variant="subtle">
-                            <IconDotsVertical size="1.125rem" />
+                          <ActionIcon variant="subtle" size="lg" radius="md">
+                            <IconDotsVertical size={16} />
                           </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
-                          <Menu.Item onClick={() => handleViewDocument(doc.id)}>
+                          <Menu.Item 
+                            leftSection={<IconEye size={14} />}
+                            onClick={() => handleViewDocument(doc.id)}
+                          >
                             View Details
                           </Menu.Item>
-                          <Menu.Item onClick={() => handleDownloadDocument(doc.id)}>
+                          <Menu.Item 
+                            leftSection={<IconDownload size={14} />}
+                            onClick={() => handleDownloadDocument(doc.id)}
+                          >
                             Download
                           </Menu.Item>
                         </Menu.Dropdown>

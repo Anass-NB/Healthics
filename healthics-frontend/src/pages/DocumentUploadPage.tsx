@@ -110,7 +110,7 @@ const DocumentUploadPage = () => {
       )}
 
       <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack spacing="md">
+        <Stack gap="md">
           <TextInput
             required
             label="Document Title"
@@ -161,7 +161,7 @@ const DocumentUploadPage = () => {
             disabled={loading || submitting}
           />
 
-          <Stack spacing="xs">
+          <Stack gap="xs">
             <Text size="sm" fw={500}>Upload Document File (PDF, JPG, PNG)</Text>
             <Dropzone
               onDrop={handleDrop}

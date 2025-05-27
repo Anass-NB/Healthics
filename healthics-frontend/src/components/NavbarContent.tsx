@@ -8,8 +8,8 @@ import {
   IconUpload, 
   IconDashboard, 
   IconUsers, 
-  IconFileAnalytics, 
-  IconChartBar 
+  IconFileAnalytics,
+  IconStethoscope
 } from '@tabler/icons-react';
 
 const NavbarContent = () => {
@@ -46,13 +46,20 @@ const NavbarContent = () => {
             leftSection={<IconFileText size={20} />}
             active={location.pathname === '/documents'}
           />
-          
-          <NavLink
+            <NavLink
             component={Link}
             to="/documents/upload"
             label="Upload Document"
             leftSection={<IconUpload size={20} />}
             active={location.pathname === '/documents/upload'}
+          />
+          
+          <NavLink
+            component={Link}
+            to="/health-advisor"
+            label="Health Advisor"
+            leftSection={<IconStethoscope size={20} />}
+            active={location.pathname === '/health-advisor'}
           />
         </>
       )}

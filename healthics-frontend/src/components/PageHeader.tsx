@@ -14,9 +14,20 @@ interface PageHeaderProps {
  */
 const PageHeader = ({ title, subtitle, showBackButton = true, action }: PageHeaderProps) => {
   const navigate = useNavigate();
-  
-  return (
-    <Paper shadow="xs" p="md" mb="lg" withBorder>
+    return (
+    <Paper 
+      shadow="sm" 
+      p="lg" 
+      mb="lg" 
+      withBorder
+      radius="xl"
+      style={{
+        background: 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+      }}
+    >
       <Flex justify="space-between" align="center">
         <Group>
           {showBackButton && (

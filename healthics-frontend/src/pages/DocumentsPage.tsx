@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Container, 
-  Title, 
   Button, 
   Group, 
   Table, 
@@ -12,29 +11,14 @@ import {
   Text, 
   Alert, 
   LoadingOverlay, 
-  Paper 
+  Paper,
+  ThemeIcon
 } from '@mantine/core';
-import { IconDownload, IconEye, IconEdit, IconTrash, IconDotsVertical, IconPlus } from '@tabler/icons-react';
-import documentService from '../api/documentService';
+import { IconDownload, IconEye, IconEdit, IconTrash, IconDotsVertical, IconPlus, IconUpload } from '@tabler/icons-react';
+import documentService, { Document } from '../api/documentService';
 import { notifications } from '@mantine/notifications';
-import { useAuth } from '../context/AuthContext';
-
-// Define document interface to match API response exactly
-interface Document {
-  id: number;
-  title: string;
-  description: string;
-  categoryId: number;
-  categoryName: string;
-  fileType: string;
-  fileSize: number;
-  doctorName: string;
-  hospitalName: string;
-  documentDate: string;
-  uploadDate: string;
-  lastModifiedDate: string;
-  downloadUrl: string;
-}
+import PageHeader from '../components/PageHeader';
+import EmptyState from '../components/EmptyState';
 
 const DocumentsPage = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -42,7 +26,6 @@ const DocumentsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -130,29 +113,67 @@ const DocumentsPage = () => {
   };
 
   return (
-    <Container size="lg" pos="relative">
+    <Container size="xl" py="xl">
       <LoadingOverlay visible={loading} />
-      
-      <Group justify="space-between" mb="lg">
-        <Title>My Documents</Title>
-        <Button 
-          leftIcon={<IconPlus size="1rem" />} 
+        <PageHeader
+        title="My Documents"
+      />
+
+      <Group justify="flex-end" mb="xl">        <Button 
+          leftSection={<IconPlus size={16} />} 
           onClick={() => navigate('/documents/upload')}
+          variant="gradient"
+          gradient={{ from: 'medicalBlue', to: 'blue' }}
+          size="md"
+          radius="xl"
         >
           Upload Document
         </Button>
       </Group>
 
       {error && (
-        <Alert color="red" mb="lg" title="Error" withCloseButton onClose={() => setError(null)}>
+        <Alert 
+          color="red" 
+          mb="xl" 
+          title="Error" 
+          withCloseButton 
+          onClose={() => setError(null)}
+          radius="md"
+        >
           {error}
         </Alert>
       )}
 
-      <Paper shadow="sm" p="md" withBorder>
-        {documents.length === 0 ? (
-          <Text>No documents found. Click the "Upload Document" button to add your first document.</Text>
-        ) : (
+      {documents.length === 0 && !loading ? (
+        <EmptyState
+          title="No Documents Found"
+          description="You haven't uploaded any documents yet. Click the upload button to add your first document."          icon={
+            <ThemeIcon size={80} radius={100} color="medicalBlue.1" variant="light">
+              <IconUpload size={40} color="var(--mantine-color-medicalBlue-6)" />
+            </ThemeIcon>
+          }
+          primaryAction={{
+            label: "Upload Your First Document",
+            onClick: () => navigate('/documents/upload'),
+            icon: <IconPlus size={16} />
+          }}
+        />
+      ) : (
+        <Paper 
+          shadow="sm" 
+          p="xl" 
+          radius="xl"
+          style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <Text size="sm" c="dimmed" mb="md">
+            {documents.length} document{documents.length !== 1 ? 's' : ''} found
+          </Text>
+          
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
@@ -166,14 +187,22 @@ const DocumentsPage = () => {
             </Table.Thead>
             <Table.Tbody>
               {documents.map((doc) => (
-                <Table.Tr key={doc.id}>
-                  <Table.Td>{doc.title}</Table.Td>
-                  <Table.Td>
-                    <Badge>{doc.categoryName}</Badge>
+                <Table.Tr key={doc.id}>                  <Table.Td>
+                    <Text fw={500} c="medicalBlue">{doc.title}</Text>
+                  </Table.Td>                  <Table.Td>
+                    <Badge variant="light" color="medicalBlue" size="sm">
+                      {doc.categoryName || 'Uncategorized'}
+                    </Badge>
                   </Table.Td>
-                  <Table.Td>{doc.doctorName}</Table.Td>
-                  <Table.Td>{formatDate(doc.documentDate)}</Table.Td>
-                  <Table.Td>{formatFileSize(doc.fileSize)}</Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{doc.doctorName || 'Not specified'}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{formatDate(doc.documentDate)}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm" c="dimmed">{formatFileSize(doc.fileSize)}</Text>
+                  </Table.Td>
                   <Table.Td>
                     <Group gap="xs">
                       <ActionIcon 
@@ -181,8 +210,10 @@ const DocumentsPage = () => {
                         color="blue" 
                         onClick={() => handleViewDocument(doc.id)}
                         title="View document"
+                        size="lg"
+                        radius="xl"
                       >
-                        <IconEye size="1.125rem" />
+                        <IconEye size={16} />
                       </ActionIcon>
                       <ActionIcon 
                         variant="light" 
@@ -190,52 +221,58 @@ const DocumentsPage = () => {
                         onClick={() => handleDownloadDocument(doc.id)}
                         title="Download document"
                         loading={downloadingId === doc.id}
+                        size="lg"
+                        radius="xl"
                       >
-                        <IconDownload size="1.125rem" />
+                        <IconDownload size={16} />
                       </ActionIcon>
                       <ActionIcon 
                         variant="light" 
                         color="yellow" 
                         onClick={() => handleEditDocument(doc.id)}
                         title="Edit document"
+                        size="lg"
+                        radius="xl"
                       >
-                        <IconEdit size="1.125rem" />
+                        <IconEdit size={16} />
                       </ActionIcon>
                       <ActionIcon 
                         variant="light" 
                         color="red" 
                         onClick={() => handleDeleteDocument(doc.id)}
                         title="Delete document"
+                        size="lg"
+                        radius="xl"
                       >
-                        <IconTrash size="1.125rem" />
+                        <IconTrash size={16} />
                       </ActionIcon>
                       <Menu position="bottom-end" shadow="md">
                         <Menu.Target>
-                          <ActionIcon variant="subtle">
-                            <IconDotsVertical size="1.125rem" />
+                          <ActionIcon variant="subtle" size="lg" radius="xl">
+                            <IconDotsVertical size={16} />
                           </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
                           <Menu.Item 
-                            icon={<IconEye size="1rem" />} 
+                            leftSection={<IconEye size={14} />} 
                             onClick={() => handleViewDocument(doc.id)}
                           >
                             View Details
                           </Menu.Item>
                           <Menu.Item 
-                            icon={<IconDownload size="1rem" />} 
+                            leftSection={<IconDownload size={14} />} 
                             onClick={() => handleDownloadDocument(doc.id)}
                           >
                             Download
                           </Menu.Item>
                           <Menu.Item 
-                            icon={<IconEdit size="1rem" />} 
+                            leftSection={<IconEdit size={14} />} 
                             onClick={() => handleEditDocument(doc.id)}
                           >
                             Edit
                           </Menu.Item>
                           <Menu.Item 
-                            icon={<IconTrash size="1rem" />} 
+                            leftSection={<IconTrash size={14} />} 
                             color="red" 
                             onClick={() => handleDeleteDocument(doc.id)}
                           >
@@ -249,9 +286,8 @@ const DocumentsPage = () => {
               ))}
             </Table.Tbody>
           </Table>
-        )}
-      </Paper>
-    </Container>
+        </Paper>
+      )}    </Container>
   );
 };
 

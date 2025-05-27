@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Button, Group, Table, Badge, ActionIcon, Text, Menu, Alert, Paper, LoadingOverlay } from '@mantine/core';
+import { Container, Button, Group, Table, Badge, Text, Alert, Paper, LoadingOverlay } from '@mantine/core';
 import documentService, { Document, DocumentCategory } from '../api/documentService';
 import adminService from '../api/adminService';
 import { notifications } from '@mantine/notifications';
@@ -68,25 +68,22 @@ const PatientDocumentsPage = () => {
   const handleViewDocument = (id: number) => {
     navigate(`/admin/documents/${id}`);
   };
-
   const handleDownloadDocument = async (id: number) => {
     try {
-      const document = documents.find(doc => doc.id === id);
-      if (!document) return;
-
-      // Use admin service to download the document
-      const blob = await adminService.downloadDocument(id);
+      const doc = documents.find(doc => doc.id === id);
+      if (!doc) return;      // Use admin service to download the document
+      const { blob, filename } = await adminService.downloadDocument(id);
       
       // Create a download link
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = window.document.createElement('a');
       link.href = url;
-      link.download = document.filename || `document-${id}.pdf`;
+      link.download = filename || `document-${id}.pdf`;
       
       // Append to body, click, and clean up
-      document.body.appendChild(link);
+      window.document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      window.document.body.removeChild(link);
       
       notifications.show({
         title: 'Success',

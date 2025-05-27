@@ -13,7 +13,6 @@ import {
   ThemeIcon, 
   Flex,
   Image,
-  Divider,
   useMantineTheme,
   Paper
 } from '@mantine/core';
@@ -21,7 +20,6 @@ import { useAuth } from '../context/AuthContext';
 import { 
   IconCalendar, 
   IconFolder, 
-  IconUpload, 
   IconShare, 
   IconBuildingHospital,
   IconReportMedical,
@@ -31,9 +29,9 @@ import {
   IconHeartRateMonitor,
   IconUserCircle,
   IconFileAnalytics,
-  IconCloudUpload
+  IconCloudUpload,
+  IconStethoscope
 } from '@tabler/icons-react';
-import { IconStethoscope } from '@tabler/icons-react';
 
 const HomePage = () => {
   const { user, isAdmin } = useAuth();
@@ -79,15 +77,18 @@ const HomePage = () => {
     <>
       <Box 
         py={60} 
-        sx={(theme) => ({
-          background: `linear-gradient(45deg, ${theme.colors.blue[7]} 0%, ${theme.colors.cyan[7]} 100%)`,
-          color: theme.white,
-          borderRadius: theme.radius.md
-        })}
+        px={20}        style={{
+          background: `linear-gradient(135deg, rgba(25, 118, 210, 0.9) 0%, rgba(66, 165, 245, 0.9) 100%)`,
+          color: 'white',
+          borderRadius: theme.radius.xl,
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}
         mb={40}
       >
         <Container size="lg">
-          <Stack spacing="xl" ta="center" mb={40}>
+          <Stack gap="xl" ta="center" mb={40}>
             <Title 
               order={1} 
               size={rem(48)}
@@ -126,7 +127,7 @@ const HomePage = () => {
       </Box>
 
       <Container size="lg">
-        <Title align="center" order={2} mb={50} fw={700}>
+        <Title ta="center" order={2} mb={50} fw={700}>
           Digitize and manage your complete health journey
         </Title>
         
@@ -191,8 +192,8 @@ const HomePage = () => {
 
   // Admin dashboard homepage
   const AdminHome = () => (
-    <Stack spacing="xl">
-      <Title order={1}>Welcome, Administrator {user.username}</Title>
+    <Stack gap="xl">
+      <Title order={1}>Welcome, Administrator {user?.username}</Title>
       <Text size="lg" c="dimmed" mb="lg">
         Manage patient records, documents, and system statistics
       </Text>
@@ -200,12 +201,11 @@ const HomePage = () => {
       <Box 
         py={30} 
         px={20}
-        mb={20}
-        sx={(theme) => ({
-          background: `linear-gradient(45deg, ${theme.colors.indigo[7]} 0%, ${theme.colors.blue[5]} 100%)`,
+        mb={20}        style={{
+          background: `linear-gradient(45deg, ${theme.colors.medicalBlue[7]} 0%, ${theme.colors.blue[5]} 100%)`,
           borderRadius: theme.radius.md,
           color: theme.white
-        })}
+        }}
       >
         <Flex align="center" gap="md" wrap="wrap">
           <IconChartBar size={48} />
@@ -279,8 +279,8 @@ const HomePage = () => {
 
   // Patient dashboard homepage
   const PatientHome = () => (
-    <Stack spacing="xl">
-      <Title order={1}>Welcome back, {user.username}</Title>
+    <Stack gap="xl">
+      <Title order={1}>Welcome back, {user?.username}</Title>
       <Text c="dimmed" size="lg">
         Manage your health documents and information in one secure place
       </Text>
@@ -288,23 +288,21 @@ const HomePage = () => {
       <Box 
         py={30} 
         px={20}
-        mb={20}
-        sx={(theme) => ({
-          background: `linear-gradient(45deg, ${theme.colors.cyan[7]} 0%, ${theme.colors.blue[5]} 100%)`,
+        mb={20}        style={{
+          background: `linear-gradient(45deg, ${theme.colors.medicalBlue[7]} 0%, ${theme.colors.blue[5]} 100%)`,
           borderRadius: theme.radius.md,
           color: theme.white
-        })}
+        }}
       >
         <Flex align="center" gap="md" wrap="wrap">
           <IconUserCircle size={48} />
           <div>
             <Text fw={700} size="xl">Your Health Profile</Text>
             <Text size="sm">Keep your medical information up-to-date for better healthcare</Text>
-          </div>
-          <Button 
+          </div>          <Button 
             ml="auto" 
             variant="white" 
-            color="cyan" 
+            color="medicalBlue" 
             radius="xl"
             onClick={() => navigate('/profile')}
           >
@@ -330,15 +328,14 @@ const HomePage = () => {
           </Button>
         </Paper>
         
-        <Paper shadow="md" p="xl" radius="md" withBorder>
-          <IconCloudUpload size={32} color={theme.colors.teal[6]} />
+        <Paper shadow="md" p="xl" radius="md" withBorder>          <IconCloudUpload size={32} color={theme.colors.medicalBlue[6]} />
           <Title order={3} mt="md" mb="xs">Upload Documents</Title>
           <Text size="sm" color="dimmed" mb="lg">
             Add new medical documents to your secure storage
           </Text>
           <Button 
             variant="light" 
-            color="teal" 
+            color="medicalBlue" 
             fullWidth 
             onClick={() => navigate('/documents/upload')}
           >
@@ -348,8 +345,7 @@ const HomePage = () => {
         
         <Paper shadow="md" p="xl" radius="md" withBorder>
           <IconShare size={32} color={theme.colors.indigo[6]} />
-          <Title order={3} mt="md" mb="xs">Share Health Data</Title>
-          <Text size="sm" color="dimmed" mb="lg">
+          <Title order={3} mt="md" mb="xs">Share Health Data</Title>          <Text size="sm" color="dimmed" mb="lg">
             Securely share your medical information with healthcare providers
           </Text>
           <Button 
@@ -360,22 +356,21 @@ const HomePage = () => {
           >
             Manage Sharing
           </Button>
+        </Paper>        <Paper shadow="md" p="xl" radius="md" withBorder>
+          <IconStethoscope size={32} color={theme.colors.medicalBlue[6]} />
+          <Title order={3} mt="md" mb="xs">Health Advisor</Title>
+          <Text size="sm" color="dimmed" mb="lg">
+            Check symptoms and chat with AI health assistant
+          </Text>
+          <Button 
+            variant="light" 
+            color="medicalBlue" 
+            fullWidth 
+            onClick={() => navigate('/health-advisor')}
+          >
+            Open Advisor
+          </Button>
         </Paper>
-        <Paper shadow="md" p="xl" radius="md" withBorder>
-  <IconStethoscope size={32} color={theme.colors.cyan[6]} />
-  <Title order={3} mt="md" mb="xs">Health Advisor</Title>
-  <Text size="sm" color="dimmed" mb="lg">
-    Check symptoms and chat with AI health assistant
-  </Text>
-  <Button 
-    variant="light" 
-    color="cyan" 
-    fullWidth 
-    onClick={() => navigate('/health-advisor')}
-  >
-    Open Advisor
-  </Button>
-</Paper>
       </SimpleGrid>
     </Stack>
   );

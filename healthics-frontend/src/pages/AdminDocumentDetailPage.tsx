@@ -10,31 +10,15 @@ import {
   Divider, 
   LoadingOverlay, 
   Alert,
-  ActionIcon,
   Paper,
-  Title,
-  Box
+  Group,
+  Stack,
+  ThemeIcon
 } from '@mantine/core';
-import { IconDownload, IconArrowLeft, IconFile } from '@tabler/icons-react';
+import { IconDownload, IconDashboard, IconFile } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import documentService from '../api/documentService';
-
-// Define Document interface to match API response exactly
-interface Document {
-  id: number;
-  title: string;
-  description: string;
-  categoryId: number;
-  categoryName: string;
-  fileType: string;
-  fileSize: number;
-  doctorName: string;
-  hospitalName: string;
-  documentDate: string;
-  uploadDate: string;
-  lastModifiedDate: string;
-  downloadUrl: string;
-}
+import documentService, { Document } from '../api/documentService';
+import PageHeader from '../components/PageHeader';
 
 const AdminDocumentDetailPage = () => {
   const { documentId } = useParams<{ documentId: string }>();
@@ -112,12 +96,11 @@ const AdminDocumentDetailPage = () => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];  };
 
   if (loading) {
     return (
-      <Container style={{ position: 'relative', height: 400 }}>
+      <Container size="lg" pos="relative" h={400}>
         <LoadingOverlay visible />
       </Container>
     );
@@ -125,12 +108,21 @@ const AdminDocumentDetailPage = () => {
 
   if (error) {
     return (
-      <Container>
+      <Container size="lg">
+        <PageHeader 
+          title="Document Details"
+          action={
+            <Button variant="outline" onClick={() => navigate('/admin/dashboard')}>
+              <IconDashboard size={16} style={{ marginRight: 8 }} />
+              Dashboard
+            </Button>
+          }
+        />
         <Alert color="red" title="Error">
           {error}
         </Alert>
-        <Button style={{ marginTop: '16px' }} onClick={handleGoBack}>
-          Back
+        <Button mt="md" onClick={handleGoBack}>
+          Go Back
         </Button>
       </Container>
     );
@@ -138,118 +130,141 @@ const AdminDocumentDetailPage = () => {
 
   if (!document) {
     return (
-      <Container>
+      <Container size="lg">
+        <PageHeader 
+          title="Document Details"
+          action={
+            <Button variant="outline" onClick={() => navigate('/admin/dashboard')}>
+              <IconDashboard size={16} style={{ marginRight: 8 }} />
+              Dashboard
+            </Button>
+          }
+        />
         <Alert color="red" title="Not Found">
           Document not found.
         </Alert>
-        <Button style={{ marginTop: '16px' }} onClick={handleGoBack}>
-          Back
+        <Button mt="md" onClick={handleGoBack}>
+          Go Back
         </Button>
       </Container>
     );
   }
 
   return (
-    <Container>
-      <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
-        <ActionIcon size="lg" variant="subtle" onClick={handleGoBack}>
-          <IconArrowLeft />
-        </ActionIcon>
-        <Title order={2}>Document Details</Title>
-      </Box>
+    <Container size="lg">
+      <PageHeader 
+        title="Document Details"
+        subtitle={document.title}
+        action={
+          <Button variant="outline" onClick={() => navigate('/admin/dashboard')}>
+            <IconDashboard size={16} style={{ marginRight: 8 }} />
+            Dashboard
+          </Button>
+        }
+      />
 
-      <Paper style={{ padding: '20px', marginBottom: '20px', border: '1px solid #eee', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <Title order={3}>{document.title}</Title>
-          <Button 
+      <Paper 
+        style={{ 
+          padding: '24px', 
+          marginBottom: '24px', 
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: '12px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}
+      >
+        <Group justify="space-between" mb="xl">
+          <Text size="xl" fw={600} c="dark">
+            {document.title}
+          </Text>          <Button 
             onClick={handleDownload}
             loading={downloadLoading}
-            style={{ display: 'flex', alignItems: 'center' }}
+            color="medicalBlue"
+            size="sm"
+            radius="md"
+            leftSection={<IconDownload size={16} />}
           >
-            <IconDownload size="1rem" style={{ marginRight: '0.5rem' }} />
             Download
           </Button>
-        </Box>
-
+        </Group>
+        
         <Grid>
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Card style={{ border: '1px solid #eee', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              <Box style={{ 
-                borderBottom: '1px solid #eee', 
-                padding: '8px 16px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <Text style={{ fontWeight: 500 }}>Document Information</Text>
-                <Badge>{document.categoryName}</Badge>
-              </Box>
+            <Card withBorder shadow="sm" radius="md" h="100%">
+              <Card.Section withBorder inheritPadding py="xs">
+                <Group justify="space-between">
+                  <Text fw={500}>Document Information</Text>                  <Badge 
+                    color="medicalBlue" 
+                    variant="light" 
+                    radius="md" 
+                    size="sm"
+                  >
+                    {document.categoryName || 'Uncategorized'}
+                  </Badge>
+                </Group>
+              </Card.Section>
               
-              <Box style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <Box style={{ display: 'flex' }}>
-                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Document Date:</Text>
-                  <Text>{formatDate(document.documentDate)}</Text>
-                </Box>
+              <Stack gap="sm" mt="md">
+                <Group>
+                  <Text size="sm" fw={500} w={130}>Document Date:</Text>
+                  <Text size="sm">{formatDate(document.documentDate)}</Text>
+                </Group>
                 
-                <Box style={{ display: 'flex' }}>
-                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Doctor:</Text>
-                  <Text>{document.doctorName || 'Not specified'}</Text>
-                </Box>
+                <Group>
+                  <Text size="sm" fw={500} w={130}>Doctor:</Text>
+                  <Text size="sm">{document.doctorName || 'Not specified'}</Text>
+                </Group>
                 
-                <Box style={{ display: 'flex' }}>
-                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Hospital/Clinic:</Text>
-                  <Text>{document.hospitalName || 'Not specified'}</Text>
-                </Box>
-              </Box>
+                <Group>
+                  <Text size="sm" fw={500} w={130}>Hospital/Clinic:</Text>
+                  <Text size="sm">{document.hospitalName || 'Not specified'}</Text>
+                </Group>
+              </Stack>
             </Card>
           </Grid.Col>
           
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Card style={{ 
-              border: '1px solid #eee', 
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-              height: '100%'
-            }}>
-              <Box style={{ 
-                borderBottom: '1px solid #eee', 
-                padding: '8px 16px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <Text style={{ fontWeight: 500 }}>File Information</Text>
-                <IconFile size="1.2rem" />
-              </Box>
+            <Card withBorder shadow="sm" radius="md" h="100%">
+              <Card.Section withBorder inheritPadding py="xs">
+                <Group justify="space-between">                <Text fw={500}>File Information</Text>
+                  <ThemeIcon color="medicalBlue" variant="light" size="sm" radius="md">
+                    <IconFile size={16} />
+                  </ThemeIcon>
+                </Group>
+              </Card.Section>
               
-              <Box style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <Box style={{ display: 'flex' }}>
-                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>File Type:</Text>
-                  <Text>{document.fileType}</Text>
-                </Box>
+              <Stack gap="sm" mt="md">
+                <Group>
+                  <Text size="sm" fw={500} w={130}>File Type:</Text>
+                  <Text size="sm">{document.fileType}</Text>
+                </Group>
                 
-                <Box style={{ display: 'flex' }}>
-                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>File Size:</Text>
-                  <Text>{formatFileSize(document.fileSize)}</Text>
-                </Box>
+                <Group>
+                  <Text size="sm" fw={500} w={130}>File Size:</Text>
+                  <Text size="sm">{formatFileSize(document.fileSize)}</Text>
+                </Group>
                 
-                <Box style={{ display: 'flex' }}>
-                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Upload Date:</Text>
-                  <Text>{formatDate(document.uploadDate)}</Text>
-                </Box>
+                <Group>
+                  <Text size="sm" fw={500} w={130}>Upload Date:</Text>
+                  <Text size="sm">{formatDate(document.uploadDate)}</Text>
+                </Group>
                 
-                <Box style={{ display: 'flex' }}>
-                  <Text style={{ width: '150px', fontSize: '14px', fontWeight: 500 }}>Last Modified:</Text>
-                  <Text>{formatDate(document.lastModifiedDate)}</Text>
-                </Box>
-              </Box>
+                <Group>
+                  <Text size="sm" fw={500} w={130}>Last Modified:</Text>
+                  <Text size="sm">{formatDate(document.lastModifiedDate)}</Text>
+                </Group>
+              </Stack>
             </Card>
           </Grid.Col>
         </Grid>
 
-        <Divider style={{ margin: '20px 0' }} />
+        <Divider my="xl" />
         
-        <Text style={{ fontWeight: 500, marginBottom: '8px' }}>Description</Text>
-        <Text>{document.description || 'No description provided.'}</Text>
+        <Stack gap="xs">
+          <Text fw={500} size="lg">Description</Text>
+          <Text c="dimmed">{document.description || 'No description provided.'}</Text>
+        </Stack>
       </Paper>
     </Container>
   );
